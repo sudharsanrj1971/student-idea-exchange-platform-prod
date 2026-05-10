@@ -1,0 +1,20 @@
+﻿[34mdebug[39m: ΓÜí Socket connected: qnZwZ0xqcnns3wkMAAyZ (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.102Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1613) {"timestamp":"2026-04-30T01:15:22.296Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:22.306Z"}
+[34mdebug[39m: ΓÜí Socket connected: 00XZvs1wkxw8e3TjAAyb (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.306Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1614) {"timestamp":"2026-04-30T01:15:22.453Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:22.462Z"}
+[34mdebug[39m: ΓÜí Socket connected: OFz8_LZ79l7f6zeMAAyd (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.462Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1615) {"timestamp":"2026-04-30T01:15:22.622Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:22.629Z"}
+[34mdebug[39m: ΓÜí Socket connected: 8pc9J6C3l00CPYfBAAyf (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.630Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1616) {"timestamp":"2026-04-30T01:15:22.787Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:22.797Z"}
+[34mdebug[39m: ΓÜí Socket connected: 6nD_dqrLEDIk47kxAAyh (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.797Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1617) {"timestamp":"2026-04-30T01:15:22.951Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:22.958Z"}
+[34mdebug[39m: ΓÜí Socket connected: NoaI4Y_tazamZ6gBAAyj (user: Load Test User) {"timestamp":"2026-04-30T01:15:22.958Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1618) {"timestamp":"2026-04-30T01:15:23.119Z"}
+[34mdebug[39m: [Socket Auth] Served cached user Load Test User with avatar: null {"timestamp":"2026-04-30T01:15:23.127Z"}
+[34mdebug[39m: ΓÜí Socket connected: PxC_48MOpq8TvXbmAAyl (user: Load Test User) {"timestamp":"2026-04-30T01:15:23.129Z"}
+[34mdebug[39m: ≡ƒæñ Load Test User joined session 69f2ac006b2c7331c52fc261 (Concurrent: 1619) {"timestamp":"2026-04-30T01:15:26.376Z"}

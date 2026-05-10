@@ -1,0 +1,23 @@
+node_modules/
+dist/
+build/
+
+# Environment files - never commit secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+!**/production.env.example
+
+*.log
+.DS_Store
+Thumbs.db
+coverage/
+.nyc_output/
+
+# Build artifacts
+server.log
+out.log
+err.log
+error.log

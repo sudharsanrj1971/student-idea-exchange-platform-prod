@@ -1,0 +1,6 @@
+﻿[2026-04-25T12:22:28.367Z] IChange ΓÇö 1200+ User Failure-Boundary Stress Test
+[2026-04-25T12:22:28.369Z] Target: http://localhost:5010
+[2026-04-25T12:22:28.369Z] 
+[2026-04-25T12:22:28.369Z] Step 1: Authenticating load test user...
+[2026-04-25T12:22:28.481Z] Γ¥î FATAL: Cannot authenticate ΓÇö Login failed (401): {"error":"Invalid email or password","message":"Invalid email or password"}
+[2026-04-25T12:22:28.482Z]   ΓåÆ Ensure backend is running and LOAD_TEST_MODE=true in .env

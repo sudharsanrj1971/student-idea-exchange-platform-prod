@@ -1,0 +1,26 @@
+name: Deploy iChange to Oracle Cloud
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: SSH Deploy to Oracle A1
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚀 Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ORACLE_IP }}
+          username: ubuntu
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            set -e
+            echo "📦 Pulling latest code..."
+            cd /opt/ichange
+            git pull origin main
+            echo "📦 Installing dependencies..."
+            npm install --workspaces --prefer-offline
+            echo "🔄 Restarting backend..."
+            pm2 restart ichange-backend --update-env
+            echo "✅ Deployment complete! $(date)"

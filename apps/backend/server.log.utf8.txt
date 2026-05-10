@@ -1,0 +1,6 @@
+﻿
+> @ichange/backend@1.0.0 start:scale
+> cross-env UV_THREADPOOL_SIZE=128 node --max-old-space-size=8192 src/index.js
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: 5ylKKqvsWwQdZeZIL8gof] {"timestamp":"2026-04-30T01:07:17.026Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-30T01:07:17.674Z"}

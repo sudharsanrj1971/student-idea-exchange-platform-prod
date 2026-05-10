@@ -1,0 +1,167 @@
+################################################################################
+# iChange Artillery Load Test Configuration
+# Target: 1,200 concurrent users | p95 SLA: < 500ms | Error Rate: < 1%
+#
+# Prerequisites:
+#   1. node apps/backend/scripts/generate-load-test-users.js  (creates users.csv)
+#   2. artillery run ichange-load-test.yml --output report.json
+#   3. artillery report report.json
+################################################################################
+
+config:
+  target: "http://localhost:5010"  # Dev port — change to https://ichange.yourdomain.com for prod
+
+  phases:
+    - name: warm-up
+      duration: 20
+      arrivalRate: 6          # 120 users over 20s — let the DB pool warm up
+
+    - name: ramp
+      duration: 40
+      arrivalRate: 6
+      rampTo: 60              # 120 → 1200 users over 40s
+
+    - name: sustain
+      duration: 180
+      arrivalRate: 60         # Hold 1200/s sustained — the real stress window
+
+  payload:
+    path: "./users.csv"
+    fields:
+      - token
+      - roomId
+      - userId
+
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+
+  defaults:
+    headers:
+      Authorization: "Bearer {{ token }}"
+      Content-Type: "application/json"
+
+  # Fail thresholds (Check #5, #6)
+  thresholds:
+    http.response_time.p95: 500    # Check #5: p95 < 500ms
+    http.request_rate: 1200        # Check target
+    vusers.failed: 12              # Check #6: < 1% of 1200
+
+scenarios:
+
+  # SCENARIO 1: JWT Auth + Token Refresh (weight: 15%)
+  # Tests: login endpoint, JWT generation, token refresh flow
+  - name: "JWT Auth + Token Refresh"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "loadtest-user@ichange.app"
+            password: "Password123"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.accessToken"
+              as: "freshToken"
+      - think: 2
+      - post:
+          url: "/api/auth/refresh"
+          json:
+            refreshToken: "{{ token }}"
+          expect:
+            - statusCode: [200, 401]  # 401 is acceptable (token may be expired)
+
+  # SCENARIO 2: Socket Room Join/Leave (weight: 35%)
+  # Tests: session:join race condition fix, participant count consistency
+  - name: "Socket Room Stress"
+    weight: 35
+    engine: socketio
+    flow:
+      - emit:
+          channel: "session:join"
+          data:
+            sessionId: "{{ roomId }}"
+          response:
+            channel: "session:participants"
+            data:
+              - match:
+                  json: "$.participants"
+                  value: "{{ $exists }}"
+      - think: 1
+      - loop:
+          - emit:
+              channel: "chat:send"
+              data:
+                sessionId: "{{ roomId }}"
+                text: "Load test message {{ $loopCount }}"
+        count: 5
+      - think: 3
+      - emit:
+          channel: "session:leave"
+          data:
+            sessionId: "{{ roomId }}"
+
+  # SCENARIO 3: Reconnection Flood (weight: 10%)
+  # Tests: memory leak fix — socket.authorizedSessions cleanup on disconnect
+  - name: "Socket Reconnection Flood"
+    weight: 10
+    engine: socketio
+    flow:
+      - emit:
+          channel: "session:join"
+          data:
+            sessionId: "{{ roomId }}"
+      - think: 0.5
+      - emit:
+          channel: "session:leave"
+          data:
+            sessionId: "{{ roomId }}"
+      - think: 0.5
+      - emit:
+          channel: "session:join"
+          data:
+            sessionId: "{{ roomId }}"
+      - think: 1
+
+  # SCENARIO 4: API Health + Session Listing (weight: 20%)
+  # Tests: DB query performance, Connection pool utilization (Check #11)
+  - name: "API Read Workload"
+    weight: 20
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/sessions"
+          expect:
+            - statusCode: 200
+            - maxResponseTime: 500
+      - get:
+          url: "/api/user/profile"
+          expect:
+            - statusCode: 200
+
+  # SCENARIO 5: Admin Stats Aggregation (weight: 10%)
+  # Tests: Admin endpoint N+1 fix (admin token required — skip if not available)
+  - name: "Admin Dashboard Queries"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/admin/stats"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 403]  # 403 acceptable — non-admin tokens expected
+
+  # SCENARIO 6: Attendance Report (weight: 10%)
+  # Tests: Aggregation query performance with compound index
+  - name: "Attendance Report Query"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/sessions/{{ roomId }}/attendance"
+          expect:
+            - statusCode: [200, 403, 404]  # Auth-gated; 403/404 acceptable
+            - maxResponseTime: 1000

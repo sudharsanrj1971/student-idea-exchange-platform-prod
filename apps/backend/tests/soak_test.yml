@@ -1,0 +1,35 @@
+config:
+  target: "http://localhost:5010"
+  phases:
+    - name: "Sustained stability test"
+      duration: 600
+      arrivalRate: 50
+  
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  ensure:
+    p95: 500
+    maxErrorRate: 1
+
+scenarios:
+  - name: "Standard Activity"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+             email: "loadtest-user@ichange.app"
+             password: "Password123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - think: 5
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ token }}"

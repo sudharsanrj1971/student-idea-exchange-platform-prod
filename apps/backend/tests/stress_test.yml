@@ -1,0 +1,48 @@
+config:
+  target: "http://localhost:5010"
+  phases:
+    - name: "Warm up"
+      duration: 60
+      arrivalRate: 5
+    - name: "Ramp up to limit"
+      duration: 300
+      arrivalRate: 10
+      rampTo: 500
+    - name: "Max load plateau"
+      duration: 60
+      arrivalRate: 500
+  
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  # Pass/Fail conditions
+  ensure:
+    p95: 1000       # Fail if p95 response time > 1000ms
+    maxErrorRate: 5 # Fail if more than 5% of requests result in errors
+
+scenarios:
+  - name: "Authenticated User Journey"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+             email: "loadtest-user@ichange.app"
+             password: "Password123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - think: 1
+      - get:
+          url: "/api/attendance/summary"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          ifTrue: "token"

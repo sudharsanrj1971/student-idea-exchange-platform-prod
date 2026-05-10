@@ -1,0 +1,159 @@
+﻿
+> @ichange/backend@1.0.0 test
+> cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: lOaqQINn0SdzZv55kmnzQ] {"timestamp":"2026-05-10T04:03:54.329Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-05-10T04:03:54.381Z"}
+node.exe : (node:15684) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:15684) Ex...nge at any time:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/hls.smoke.test.js (8.368 s)
+  HLS Smoke Test
+    ΓêÜ GET /uploads/hls/test-session/index.m3u8 returns 200 OK (344 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: KanfDNXkurv2VODjfcT83] {"timestamp":"2026-05-10T04:03:59.843Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-05-10T04:03:59.878Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:04:01.686Z"}
+[34mdebug[39m: Known error handled Invalid session ID format {"method":"GET","name":"Error","path":"/api/sessions/%7B%22%24gt%22%3A%22%22%7D","timestamp":"2026-05-10T04:04:02.502Z"}
+[34mdebug[39m: Known error handled request entity too large {"method":"POST","name":"PayloadTooLargeError","path":"/api/sessions","timestamp":"2026-05-10T04:04:02.582Z"}
+  console.log
+      Heap growth after 50 requests: 3.18MB
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:251:13)
+
+  console.log
+      P50: 9401ms | P95: 9635ms | 5xx Errors: 0/200
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:285:13)
+
+PASS tests/capacity_boundary.test.js (67.05 s)
+  Suite 1 ΓÇö REST API: Session Capacity
+    ΓêÜ POST /api/sessions ΓÇö creates session with maxParticipants config (106 ms)
+    ΓêÜ GET /api/sessions ΓÇö returns session list under 2s at standard load (61 ms)
+    ΓêÜ GET /health ΓÇö always returns 200 even under load (32 ms)
+  Suite 2 ΓÇö Session Service: Participant Limits
+    ΓêÜ session:join returns { error: "Session is full" } when participants >= maxParticipants (43 ms)
+    ΓêÜ session:join proceeds when participants < maxParticipants (13 ms)
+    ΓêÜ atomic $push does not throw VersionError with concurrent updates (234 ms)
+  Suite 3 ΓÇö Security: Attack Vectors at Scale
+    ΓêÜ NoSQL injection in session ID is safely rejected (35 ms)
+    ΓêÜ oversized join payload (1.1MB) is rejected with 413 (84 ms)
+    ΓêÜ rate limiter still allows legitimate requests post-burst (516 ms)
+  Suite 4 ΓÇö Memory Leak Detection
+    ΓêÜ heap memory growth is bounded over 50 session lookups (2571 ms)
+  Suite 5 ΓÇö Graceful Degradation: 200 Concurrent Requests
+    ΓêÜ handles 200 concurrent GET /api/sessions ΓÇö P95 metric check (10278 ms)
+    ΓêÜ handles 200 concurrent POST /api/auth/login ΓÇö no server crash (24085 ms)
+  Suite 6 ΓÇö Maintenance Mode Enforcement
+    ΓêÜ 503 is returned when maintenance mode is active (22122 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: oVkOX5d1C6kku4dv-klpD] {"timestamp":"2026-05-10T04:05:08.840Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-05-10T04:05:08.903Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:11.099Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:11.480Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:12.115Z"}
+[34mdebug[39m: Known error handled Email already registered {"method":"POST","name":"Error","path":"/api/auth/register","timestamp":"2026-05-10T04:05:12.230Z"}
+[34mdebug[39m: Known error handled Invalid email or password {"method":"POST","name":"Error","path":"/api/auth/login","timestamp":"2026-05-10T04:05:12.413Z"}
+[34mdebug[39m: Known error handled Unauthorized to delete this session {"method":"DELETE","name":"Error","path":"/api/sessions/6a0003f7f33693363acb8175","timestamp":"2026-05-10T04:05:12.595Z"}
+[34mdebug[39m: Known error handled request entity too large {"method":"POST","name":"PayloadTooLargeError","path":"/api/auth/register","timestamp":"2026-05-10T04:05:12.790Z"}
+PASS tests/antigravity.test.js (9.641 s)
+  Blackbox ΓÇö Functional
+    POST /api/auth/register
+      ΓêÜ 201 with valid payload; no password in response (153 ms)
+      ΓêÜ 400 when email is missing (via express-validator) (33 ms)
+      ΓêÜ 400 when password is too short (< 6 chars in this project) (27 ms)
+      ΓêÜ 409 when email already registered (47 ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid credentials; returns accessToken (105 ms)
+      ΓêÜ 401 with wrong password (82 ms)
+    Protected routes
+      ΓêÜ 401 when no Authorization header (35 ms)
+      ΓêÜ 401 with malformed token (38 ms)
+      ΓêÜ 200 with valid token (50 ms)
+    DELETE /api/sessions/:id ΓÇö ownership check
+      ΓêÜ 403 when User A tries to delete User B session (60 ms)
+      ΓêÜ 200 when User B deletes their own session (82 ms)
+  Blackbox ΓÇö Security & Edge Cases
+    ΓêÜ NoSQL injection in email field is blocked by validator (29 ms)
+    ΓêÜ oversized join payload (1.1MB) is rejected with 413 (81 ms)
+  Whitebox ΓÇö Unit
+    JWT Verification
+      ΓêÜ fails for expired token (15 ms)
+      ΓêÜ decodes payload for valid token (6 ms)
+    Bcrypt hashing
+      ΓêÜ produces different hash each call (86 ms)
+      ΓêÜ compare returns true for correct input (96 ms)
+    sanitize()
+      ΓêÜ strips <script> tags (4 ms)
+      ΓêÜ removes event handlers (5 ms)
+      ΓêÜ preserves clean text (2 ms)
+    getOffset(page, limit)
+      ΓêÜ page 1 ΓåÆ offset 0 (2 ms)
+      ΓêÜ page 2 ΓåÆ offset 20 (2 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: _p9Adl_nKQZNvnsyLhRRD] {"timestamp":"2026-05-10T04:05:16.709Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-05-10T04:05:16.780Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:18.946Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:19.222Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:19.394Z"}
+[34mdebug[39m: Known error handled Email already registered {"method":"POST","name":"Error","path":"/api/auth/register","timestamp":"2026-05-10T04:05:19.449Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:19.724Z"}
+[34mdebug[39m: Known error handled Invalid email or password {"method":"POST","name":"Error","path":"/api/auth/login","timestamp":"2026-05-10T04:05:19.914Z"}
+PASS tests/unified.test.js (7 s)
+  Blackbox ΓÇö Functional
+    POST /api/auth/register
+      ΓêÜ 201 with valid payload (123 ms)
+      ΓêÜ 400 when email is invalid (28 ms)
+      ΓêÜ 409 when email already registered (257 ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid credentials (312 ms)
+      ΓêÜ 401 with wrong password (89 ms)
+  Blackbox ΓÇö Security
+    ΓêÜ 429 after exceeding rate limit (3 ms)
+    ΓêÜ XSS payload is sanitized (via utility) (3 ms)
+  Whitebox ΓÇö Unit
+    sanitize()
+      ΓêÜ strips <script> tags (2 ms)
+      ΓêÜ removes event handlers (2 ms)
+    getOffset()
+      ΓêÜ calculates correct offset (2 ms)
+    User Password Hashing
+      ΓêÜ should hash password on save (119 ms)
+  Whitebox ΓÇö Integration
+    ΓêÜ JWT Verification logic (manual check) (7 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: OiN1mL4uE7DzxOXozmWgz] {"timestamp":"2026-05-10T04:05:22.726Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.158Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.330Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.476Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.699Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.853Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:24.943Z"}
+PASS tests/whitebox/auth.service.test.js (5.195 s)
+  Auth Service - White Box
+    User Registration
+      ΓêÜ should cleanly hash the password and generate tokens (399 ms)
+      ΓêÜ should reject duplicate email addresses (150 ms)
+    User Login & Load Test Bypass
+      ΓêÜ should authenticate with a valid password (215 ms)
+      ΓêÜ should reject an invalid password (179 ms)
+      ΓêÜ should bypass expensive strict bcrypt matching during specific load test modes (208 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: wcFR8b5-EBfVYqxBlczPE] {"timestamp":"2026-05-10T04:05:28.319Z"}
+[33mwarn[39m: [Email] SMTP not configured. Skipping welcome email for: {"timestamp":"2026-05-10T04:05:29.993Z"}
+PASS tests/blackbox/auth.api.test.js
+  Auth API - Black Box
+    POST /api/auth/register
+      ΓêÜ should register a new valid user securely and return HTTP Only cookies (505 ms)
+      ΓêÜ should return 400 Bad Request for un-met password strength parameters (if active) (77 ms)
+
+Test Suites: 6 passed, 6 total
+Tests:       55 passed, 55 total
+Snapshots:   0 total
+Time:        102.351 s
+Ran all test suites.

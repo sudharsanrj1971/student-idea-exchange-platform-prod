@@ -1,0 +1,103 @@
+config:
+  target: "https://api.yourdomain.me"
+  phases:
+    # Phase 1: Warm up (100 users)
+    - name: "Warm Up (100 users)"
+      duration: 30
+      arrivalRate: 3
+      rampTo: 100
+
+    # Phase 2: Ramp to capacity (1200 users)
+    - name: "Ramp to Capacity (1200 users)"
+      duration: 120
+      arrivalRate: 100
+      rampTo: 1200
+
+    # Phase 3: Hold at capacity
+    - name: "Hold at Capacity (1200 users)"
+      duration: 60
+      arrivalRate: 1200
+
+    # Phase 4: OVER CAPACITY — find failure boundary
+    - name: "Over Capacity (1300 users)"
+      duration: 60
+      arrivalRate: 1200
+      rampTo: 1300
+
+    # Phase 5: Spike beyond limit
+    - name: "Spike Test (1500 users)"
+      duration: 30
+      arrivalRate: 1300
+      rampTo: 1500
+
+    # Phase 6: Recovery validation
+    - name: "Recovery Check (500 users)"
+      duration: 60
+      arrivalRate: 1500
+      rampTo: 500
+
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  # Pass/Fail SLA thresholds — set strict to expose failures above 1200
+  ensure:
+    p95: 2000        # Fail if p95 latency > 2s
+    maxErrorRate: 10 # Fail if error rate > 10%
+
+  plugins:
+    expect: {}
+
+scenarios:
+  # ── Scenario 1: Full User Journey (Auth + Session Browse) ──
+  - name: "Authenticated User Journey"
+    weight: 70
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "loadtest-user@ichange.app"
+            password: "Password123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/attendance/summary"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          ifTrue: "token"
+
+  # ── Scenario 2: Unauthenticated Traffic (Health Checks) ──
+  - name: "Health Check"
+    weight: 15
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+
+  # ── Scenario 3: Registration Burst (new users) ──
+  - name: "New User Registration"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "Load Bot {{ $randomNumber() }}"
+            email: "loadbot-{{ $randomNumber() }}@ichange.app"
+            password: "Password123"

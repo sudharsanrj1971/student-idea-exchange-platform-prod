@@ -1,0 +1,521 @@
+﻿
+> @ichange/backend@1.0.0 test
+> cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: 1xLpx8ZgSMRE3MvQ-jDey] {"timestamp":"2026-04-30T00:56:02.589Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-30T00:56:02.633Z"}
+node.exe : (node:18744) 
+ExperimentalWarning: VM 
+Modules is an 
+experimental feature and 
+might change at any time
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: ((  
+  node:18744) Ex...nge    
+ at any time:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+(Use `node 
+--trace-warnings ...` to 
+show where the warning 
+was created)
+[32minfo[39m: [Profile] Resolved cap-test@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:10.699Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved cap-test@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:11.084Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[31merror[39m: Unhandled error Cast to ObjectId failed for value "{"$gt":""}" (type string) at path "_id" for model "Session" {"method":"GET","path":"/api/sessions/%7B%22%24gt%22%3A%22%22%7D","timestamp":"2026-04-30T00:56:11.864Z"}
+[31merror[39m: Unhandled error request entity too large {"method":"POST","path":"/api/sessions","timestamp":"2026-04-30T00:56:11.903Z"}
+  console.log
+      Heap growth after 50 requests: -52.47MB
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:251:13)
+
+  console.log
+      P50: 2829ms | P95: 7884ms | 5xx Errors: 0/200
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:285:13)
+
+FAIL tests/capacity_bounda
+ry.test.js (51.315 s)
+  Suite 1 ΓÇö REST API: 
+Session Capacity
+    ΓêÜ POST 
+/api/sessions ΓÇö creates 
+session with 
+maxParticipants config 
+(80 ms)
+    ΓêÜ GET /api/sessions 
+ΓÇö returns session list 
+under 2s at standard load 
+(80 ms)
+    ΓêÜ GET /health ΓÇö 
+always returns 200 even 
+under load (32 ms)
+  Suite 2 ΓÇö Session 
+Service: Participant 
+Limits
+    ΓêÜ session:join 
+returns { error: "Session 
+is full" } when 
+participants >= 
+maxParticipants (45 ms)
+    ΓêÜ session:join 
+proceeds when 
+participants < 
+maxParticipants (14 ms)
+    ΓêÜ atomic $push does 
+not throw VersionError 
+with concurrent updates 
+(274 ms)
+  Suite 3 ΓÇö Security: 
+Attack Vectors at Scale
+    ΓêÜ NoSQL injection 
+in session ID is safely 
+rejected (45 ms)
+    ΓêÜ oversized join 
+payload (100KB) is 
+rejected with 413 (38 ms)
+    ΓêÜ rate limiter 
+still allows legitimate 
+requests post-burst (590 
+ms)
+  Suite 4 ΓÇö Memory Leak 
+Detection
+    ΓêÜ heap memory 
+growth is bounded over 50 
+session lookups (2498 ms)
+  Suite 5 ΓÇö Graceful 
+Degradation: 200 
+Concurrent Requests
+    ├ù handles 200 
+concurrent GET 
+/api/sessions ΓÇö P95 
+metric check (8120 ms)
+    ΓêÜ handles 200 
+concurrent POST 
+/api/auth/login ΓÇö no 
+server crash (3150 ms)
+  Suite 6 ΓÇö Maintenance 
+Mode Enforcement
+    ΓêÜ 503 is returned 
+when maintenance mode is 
+active (22071 ms)
+
+  ΓùÅ Suite 5 ΓÇö 
+Graceful Degradation: 200 
+Concurrent Requests ΓÇ║ 
+handles 200 concurrent 
+GET /api/sessions ΓÇö P95 
+metric check
+
+    expect(received).toBeL
+essThan(expected)
+
+    Expected: < 5000
+    Received:   7884
+
+    [0m [90m 286 |[39m
+     [90m 287 |[39m     
+[90m// Adjusting 
+expectation based on 
+actual observed load in 
+this environment[39m
+    
+[31m[1m>[22m[39m[90m 
+288 |[39m     expect(p95)
+[33m.[39mtoBeLessThan([
+35m5000[39m)[33m;[39m 
+     [90m     |[39m     
+            
+[31m[1m^[22m[39m
+     [90m 289 |[39m     
+expect(errorCount)[33m.[
+39mtoBe([35m0[39m)[33m;
+[39m
+     [90m 290 |[39m   
+}[33m,[39m [35m60000[3
+9m)[33m;[39m
+     [90m 291 |[39m[0m
+
+      at 
+Object.<anonymous> (tests/
+capacity_boundary.test.js:
+288:17)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: u6_-GNuNYUjLu0C4UdfBI] {"timestamp":"2026-04-30T00:56:51.683Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-30T00:56:51.713Z"}
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:55.748Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:55.908Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved userb@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:58.517Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved userb@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:58.940Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved new@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:56:59.912Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[31merror[39m: Unhandled error Email already registered {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-30T00:57:00.043Z"}
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:00.199Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'usera@ichange.app' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at src/routes/auth.routes.js:63:51
+
+[31merror[39m: Unhandled error Invalid email or password {"method":"POST","path":"/api/auth/login","timestamp":"2026-04-30T00:57:00.295Z"}
+[31merror[39m: Unhandled error Unauthorized to delete this session {"method":"DELETE","path":"/api/sessions/69f2a8dbe6b888831f101e06","timestamp":"2026-04-30T00:57:00.407Z"}
+[31merror[39m: Unhandled error request entity too large {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-30T00:57:00.536Z"}
+PASS 
+tests/antigravity.test.js 
+(12.452 s)
+  Blackbox ΓÇö Functional
+    POST 
+/api/auth/register
+      ΓêÜ 201 with valid 
+payload; no password in 
+response (790 ms)
+      ΓêÜ 400 when email 
+is missing (via 
+express-validator) (34 ms)
+      ΓêÜ 400 when 
+password is too short (< 
+6 chars in this project) 
+(28 ms)
+      ΓêÜ 409 when email 
+already registered (44 ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid 
+credentials; returns 
+accessToken (160 ms)
+      ΓêÜ 401 with wrong 
+password (88 ms)
+    Protected routes
+      ΓêÜ 401 when no 
+Authorization header (18 
+ms)
+      ΓêÜ 401 with 
+malformed token (22 ms)
+      ΓêÜ 200 with valid 
+token (29 ms)
+    DELETE 
+/api/sessions/:id ΓÇö 
+ownership check
+      ΓêÜ 403 when User A 
+tries to delete User B 
+session (48 ms)
+      ΓêÜ 200 when User B 
+deletes their own session 
+(45 ms)
+  Blackbox ΓÇö Security & 
+Edge Cases
+    ΓêÜ NoSQL injection 
+in email field is blocked 
+by validator (41 ms)
+    ΓêÜ Payload limit 
+check (10kb) (43 ms)
+  Whitebox ΓÇö Unit
+    JWT Verification
+      ΓêÜ fails for 
+expired token (18 ms)
+      ΓêÜ decodes payload 
+for valid token (8 ms)
+    Bcrypt hashing
+      ΓêÜ produces 
+different hash each call 
+(101 ms)
+      ΓêÜ compare returns 
+true for correct input 
+(89 ms)
+    sanitize()
+      ΓêÜ strips <script> 
+tags (4 ms)
+      ΓêÜ removes event 
+handlers (3 ms)
+      ΓêÜ preserves clean 
+text (2 ms)
+    getOffset(page, limit)
+      ΓêÜ page 1 ΓåÆ 
+offset 0 (4 ms)
+      ΓêÜ page 2 ΓåÆ 
+offset 20 (5 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: YRsurOYX3bJ9NbFEBegsv] {"timestamp":"2026-04-30T00:57:03.726Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-30T00:57:03.751Z"}
+[32minfo[39m: [Profile] Resolved usera@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:08.249Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved usera@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:08.392Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved new@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:08.991Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved conflict-1777510629043@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:10.255Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[31merror[39m: Unhandled error Email already registered {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-30T00:57:10.293Z"}
+[32minfo[39m: [Profile] Resolved login-1777510630304@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:11.236Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login-1777510630304@antigravity.app ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:11.386Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'usera@antigravity.app' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at src/routes/auth.routes.js:63:51
+
+[31merror[39m: Unhandled error Invalid email or password {"method":"POST","path":"/api/auth/login","timestamp":"2026-04-30T00:57:11.466Z"}
+PASS 
+tests/unified.test.js 
+(10.638 s)
+  Blackbox ΓÇö Functional
+    POST 
+/api/auth/register
+      ΓêÜ 201 with valid 
+payload (604 ms)
+      ΓêÜ 400 when email 
+is invalid (33 ms)
+      ΓêÜ 409 when email 
+already registered (1261 
+ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid 
+credentials (1097 ms)
+      ΓêÜ 401 with wrong 
+password (78 ms)
+  Blackbox ΓÇö Security
+    ΓêÜ 429 after 
+exceeding rate limit (2 
+ms)
+    ΓêÜ XSS payload is 
+sanitized (via utility) 
+(1 ms)
+  Whitebox ΓÇö Unit
+    sanitize()
+      ΓêÜ strips <script> 
+tags (1 ms)
+      ΓêÜ removes event 
+handlers (2 ms)
+    getOffset()
+      ΓêÜ calculates 
+correct offset (2 ms)
+    User Password Hashing
+      ΓêÜ should hash 
+password on save (89 ms)
+  Whitebox ΓÇö Integration
+    ΓêÜ JWT Verification 
+logic (manual check) (5 
+ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: 8vraH4E98B8wIZYviNWBG] {"timestamp":"2026-04-30T00:57:15.808Z"}
+[32minfo[39m: [Profile] Resolved api.tester.1@domain.com ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:19.305Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+PASS tests/blackbox/auth.a
+pi.test.js (8.181 s)
+  Auth API - Black Box
+    POST 
+/api/auth/register
+      ΓêÜ should register 
+a new valid user securely 
+and return HTTP Only 
+cookies (2591 ms)
+      ΓêÜ should return 
+400 Bad Request for 
+un-met password strength 
+parameters (if active) 
+(66 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: QUtiOfSuSF-Az6LL2e68B] {"timestamp":"2026-04-30T00:57:22.585Z"}
+[32minfo[39m: [Profile] Resolved tester@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:23.983Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved duplicate@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:24.852Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:27.156Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:27.540Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:28.246Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'login@ichange.edu' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at Object.<anonymous> (tests/whitebox/auth.service.test.js:73:7)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:29.111Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved loadtest-bot1@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:29.600Z"}
+  console.log
+    [Auth] registerUser resolved avatar: null
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved loadtest-bot1@ichange.edu ΓåÆ GENERATED: null {"timestamp":"2026-04-30T00:57:29.666Z"}
+  console.log
+    [Auth] loginUser resolved avatar: null
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+PASS tests/whitebox/auth.s
+ervice.test.js (9.755 s)
+  Auth Service - White Box
+    User Registration
+      ΓêÜ should cleanly 
+hash the password and 
+generate tokens (612 ms)
+      ΓêÜ should reject 
+duplicate email addresses 
+(863 ms)
+    User Login & Load 
+Test Bypass
+      ΓêÜ should 
+authenticate with a valid 
+password (2708 ms)
+      ΓêÜ should reject 
+an invalid password (731 
+ms)
+      ΓêÜ should bypass 
+expensive strict bcrypt 
+matching during specific 
+load test modes (1365 ms)
+
+Test Suites: 1 failed, 4 
+passed, 5 total
+Tests:       1 failed, 53 
+passed, 54 total
+Snapshots:   0 total
+Time:        92.611 s
+Ran all test suites.
+npm error Lifecycle 
+script `test` failed with 
+error:
+npm error code 1
+npm error path C:\Users\su
+dha\OneDrive\Desktop\ichan
+ge\apps\backend
+npm error workspace 
+@ichange/backend@1.0.0
+npm error location C:\User
+s\sudha\OneDrive\Desktop\i
+change\apps\backend
+npm error command failed
+npm error command C:\WINDO
+WS\system32\cmd.exe /d /s 
+/c cross-env NODE_OPTIONS=
+--experimental-vm-modules 
+jest --detectOpenHandles

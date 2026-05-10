@@ -1,0 +1,418 @@
+﻿node.exe : npm warn 
+Unknown cli config 
+"--testPathPattern". This 
+will stop working in the 
+next major version of npm.
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (n  
+  pm warn Unknow...vers   
+ ion of npm.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+npm warn Unknown cli 
+config "--forceExit". 
+This will stop working in 
+the next major version of 
+npm.
+
+> @ichange/backend@1.0.0 test
+> cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles
+
+FAIL tests/capacity_bounda
+ry.test.js
+  ΓùÅ Test suite failed 
+to run
+
+    SyntaxError: The 
+requested module 
+'../src/index.js' does 
+not provide an export 
+named 'httpServer'
+
+      at Runtime.linkAndEv
+aluateModule (../../node_m
+odules/jest-runtime/build/
+index.js:682:5)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: m-9QnRb3ply3QFbqVLggP] {"timestamp":"2026-04-25T12:05:35.180Z"}
+[31merror[39m: CRITICAL: Missing required environment variables: MONGODB_URI {"timestamp":"2026-04-25T12:05:35.222Z"}
+[33mwarn[39m: ΓÜá∩╕Å  Continuing in development mode with missing variables. Some features may not work. {"timestamp":"2026-04-25T12:05:35.242Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-25T12:05:35.246Z"}
+(node:10256) 
+ExperimentalWarning: VM 
+Modules is an 
+experimental feature and 
+might change at any time
+(Use `node 
+--trace-warnings ...` to 
+show where the warning 
+was created)
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:37.228Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:37.427Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved userb@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/7a30942443d6955052d358cc9c6f345e?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:37.574Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/7a30942443d6955052d358cc9c6f345e?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved userb@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/7a30942443d6955052d358cc9c6f345e?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:37.764Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/7a30942443d6955052d358cc9c6f345e?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved new@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/354a894e29d1ad806ccf5df977294640?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:38.038Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/354a894e29d1ad806ccf5df977294640?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[31merror[39m: Unhandled error Email already registered {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-25T12:05:38.157Z"}
+[32minfo[39m: [Profile] Resolved usera@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:38.319Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/b9014e40a725c0c982ea5b1a89c4c22d?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'usera@ichange.app' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at src/routes/auth.routes.js:63:51
+
+[31merror[39m: Unhandled error Invalid email or password {"method":"POST","path":"/api/auth/login","timestamp":"2026-04-25T12:05:38.399Z"}
+[31merror[39m: Unhandled error Unauthorized to delete this session {"method":"DELETE","path":"/api/sessions/69ecae1172b60bdf951dbd1f","timestamp":"2026-04-25T12:05:38.522Z"}
+[31merror[39m: Unhandled error request entity too large {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-25T12:05:38.641Z"}
+PASS 
+tests/antigravity.test.js 
+(6.776 s)
+  Blackbox ΓÇö Functional
+    POST 
+/api/auth/register
+      ΓêÜ 201 with valid 
+payload; no password in 
+response (154 ms)
+      ΓêÜ 400 when email 
+is missing (via 
+express-validator) (30 ms)
+      ΓêÜ 400 when 
+password is too short (< 
+6 chars in this project) 
+(33 ms)
+      ΓêÜ 409 when email 
+already registered (47 ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid 
+credentials; returns 
+accessToken (161 ms)
+      ΓêÜ 401 with wrong 
+password (79 ms)
+    Protected routes
+      ΓêÜ 401 when no 
+Authorization header (25 
+ms)
+      ΓêÜ 401 with 
+malformed token (20 ms)
+      ΓêÜ 200 with valid 
+token (29 ms)
+    DELETE 
+/api/sessions/:id ΓÇö 
+ownership check
+      ΓêÜ 403 when User A 
+tries to delete User B 
+session (50 ms)
+      ΓêÜ 200 when User B 
+deletes their own session 
+(60 ms)
+  Blackbox ΓÇö Security & 
+Edge Cases
+    ΓêÜ NoSQL injection 
+in email field is blocked 
+by validator (24 ms)
+    ΓêÜ Payload limit 
+check (10kb) (30 ms)
+  Whitebox ΓÇö Unit
+    JWT Verification
+      ΓêÜ fails for 
+expired token (9 ms)
+      ΓêÜ decodes payload 
+for valid token (4 ms)
+    Bcrypt hashing
+      ΓêÜ produces 
+different hash each call 
+(78 ms)
+      ΓêÜ compare returns 
+true for correct input 
+(74 ms)
+    sanitize()
+      ΓêÜ strips <script> 
+tags (2 ms)
+      ΓêÜ removes event 
+handlers (2 ms)
+      ΓêÜ preserves clean 
+text (4 ms)
+    getOffset(page, limit)
+      ΓêÜ page 1 ΓåÆ 
+offset 0 (3 ms)
+      ΓêÜ page 2 ΓåÆ 
+offset 20 (3 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: NoIiB7Kw-4hZJWw2uXzOh] {"timestamp":"2026-04-25T12:05:42.525Z"}
+[31merror[39m: CRITICAL: Missing required environment variables: MONGODB_URI {"timestamp":"2026-04-25T12:05:42.603Z"}
+[33mwarn[39m: ΓÜá∩╕Å  Continuing in development mode with missing variables. Some features may not work. {"timestamp":"2026-04-25T12:05:42.606Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-25T12:05:42.617Z"}
+[32minfo[39m: [Profile] Resolved usera@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/c6852b93bd987027b5dfe64e2d73a74e?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:44.671Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/c6852b93bd987027b5dfe64e2d73a74e?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved usera@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/c6852b93bd987027b5dfe64e2d73a74e?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:44.881Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/c6852b93bd987027b5dfe64e2d73a74e?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved new@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/3e076a001eceb9d0ab4f27ad59aa4b15?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:45.154Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/3e076a001eceb9d0ab4f27ad59aa4b15?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved conflict-1777118745268@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/7ef51f008502f82e160f916b355ec52f?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:45.432Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/7ef51f008502f82e160f916b355ec52f?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[31merror[39m: Unhandled error Email already registered {"method":"POST","path":"/api/auth/register","timestamp":"2026-04-25T12:05:45.502Z"}
+[32minfo[39m: [Profile] Resolved login-1777118745525@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/3085da0d003e6f966f0c519887c78df3?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:45.702Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/3085da0d003e6f966f0c519887c78df3?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login-1777118745525@antigravity.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/3085da0d003e6f966f0c519887c78df3?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:45.889Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/3085da0d003e6f966f0c519887c78df3?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'usera@antigravity.app' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at src/routes/auth.routes.js:63:51
+
+[31merror[39m: Unhandled error Invalid email or password {"method":"POST","path":"/api/auth/login","timestamp":"2026-04-25T12:05:45.993Z"}
+PASS 
+tests/unified.test.js 
+(7.329 s)
+  Blackbox ΓÇö Functional
+    POST 
+/api/auth/register
+      ΓêÜ 201 with valid 
+payload (306 ms)
+      ΓêÜ 400 when email 
+is invalid (59 ms)
+      ΓêÜ 409 when email 
+already registered (256 
+ms)
+    POST /api/auth/login
+      ΓêÜ 200 with valid 
+credentials (384 ms)
+      ΓêÜ 401 with wrong 
+password (107 ms)
+  Blackbox ΓÇö Security
+    ΓêÜ 429 after 
+exceeding rate limit (2 
+ms)
+    ΓêÜ XSS payload is 
+sanitized (via utility) 
+(2 ms)
+  Whitebox ΓÇö Unit
+    sanitize()
+      ΓêÜ strips <script> 
+tags (4 ms)
+      ΓêÜ removes event 
+handlers (2 ms)
+    getOffset()
+      ΓêÜ calculates 
+correct offset (3 ms)
+    User Password Hashing
+      ΓêÜ should hash 
+password on save (128 ms)
+  Whitebox ΓÇö Integration
+    ΓêÜ JWT Verification 
+logic (manual check) (4 
+ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: JTbBCb1rqfTXC-AKyQZue] {"timestamp":"2026-04-25T12:05:49.254Z"}
+[32minfo[39m: [Profile] Resolved tester@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/95515baeae49d915e96b2824f05dc5d5?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:50.955Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/95515baeae49d915e96b2824f05dc5d5?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved duplicate@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/089c1794a9af8bccf7372ce31fc9b3f5?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:51.203Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/089c1794a9af8bccf7372ce31fc9b3f5?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:51.408Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:51.540Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:51.690Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+  console.warn
+    Login failure: Password mismatch { email: 'login@ichange.edu' }
+
+    [0m [90m 88 |[39m     [36mconst[39m isValid [33m=[39m [36mawait[39m user[33m.[39mcomparePassword(password)[33m;[39m
+     [90m 89 |[39m     [36mif[39m ([33m![39misValid) {
+    [31m[1m>[22m[39m[90m 90 |[39m       console[33m.[39mwarn([32m'Login failure: Password mismatch'[39m[33m,[39m { email })[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 91 |[39m       [36mconst[39m err [33m=[39m [36mnew[39m [33mError[39m([32m'Invalid email or password'[39m)[33m;[39m
+     [90m 92 |[39m       err[33m.[39mstatusCode [33m=[39m [35m401[39m[33m;[39m
+     [90m 93 |[39m       [36mthrow[39m err[33m;[39m[0m
+
+      at loginUser (src/services/auth.service.js:90:15)
+      at Object.<anonymous> (tests/whitebox/auth.service.test.js:73:7)
+
+[32minfo[39m: [Profile] Resolved login@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:51.879Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/6fe5087bea75b93debe14cc3ccc24219?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved loadtest-bot1@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/a360594f1158c24a8f330e117386c430?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:52.009Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/a360594f1158c24a8f330e117386c430?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved loadtest-bot1@ichange.edu ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/a360594f1158c24a8f330e117386c430?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:52.102Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/a360594f1158c24a8f330e117386c430?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+PASS tests/whitebox/auth.s
+ervice.test.js (5.888 s)
+  Auth Service - White Box
+    User Registration
+      ΓêÜ should cleanly 
+hash the password and 
+generate tokens (583 ms)
+      ΓêÜ should reject 
+duplicate email addresses 
+(260 ms)
+    User Login & Load 
+Test Bypass
+      ΓêÜ should 
+authenticate with a valid 
+password (305 ms)
+      ΓêÜ should reject 
+an invalid password (202 
+ms)
+      ΓêÜ should bypass 
+expensive strict bcrypt 
+matching during specific 
+load test modes (362 ms)
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: JwE23e7xt33LmOfaL-1Qu] {"timestamp":"2026-04-25T12:05:55.391Z"}
+[32minfo[39m: [Profile] Resolved api.tester.1@domain.com ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/878c2c5ad4f5c5f191821719d8bf5e9c?s=200&d=404&r=g {"timestamp":"2026-04-25T12:05:56.947Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/878c2c5ad4f5c5f191821719d8bf5e9c?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+PASS tests/blackbox/auth.a
+pi.test.js
+  Auth API - Black Box
+    POST 
+/api/auth/register
+      ΓêÜ should register 
+a new valid user securely 
+and return HTTP Only 
+cookies (572 ms)
+      ΓêÜ should return 
+400 Bad Request for 
+un-met password strength 
+parameters (if active) 
+(68 ms)
+
+Test Suites: 1 failed, 4 
+passed, 5 total
+Tests:       41 passed, 
+41 total
+Snapshots:   0 total
+Time:        31.11 s
+Ran all test suites.
+npm error Lifecycle 
+script `test` failed with 
+error:
+npm error code 1
+npm error path C:\Users\su
+dha\OneDrive\Desktop\ichan
+ge\apps\backend
+npm error workspace 
+@ichange/backend@1.0.0
+npm error location C:\User
+s\sudha\OneDrive\Desktop\i
+change\apps\backend
+npm error command failed
+npm error command C:\WINDO
+WS\system32\cmd.exe /d /s 
+/c cross-env NODE_OPTIONS=
+--experimental-vm-modules 
+jest --detectOpenHandles

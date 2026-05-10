@@ -1,0 +1,41 @@
+config:
+  target: "https://api.yourdomain.me"
+  phases:
+    - name: "Warm up"
+      duration: 60
+      arrivalRate: 5
+    - name: "Ramp to load"
+      duration: 120
+      arrivalRate: 5
+      rampTo: 50
+    - name: "Sustained load"
+      duration: 180
+      arrivalRate: 50
+
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  ensure:
+    p95: 500
+    maxErrorRate: 1
+
+scenarios:
+  - name: "Auth + Browse Sessions"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "user@ichange.app"
+            password: "Password123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ token }}"

@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:5010"
+  phases:
+    - name: "Moderate Load Test"
+      duration: 30
+      arrivalRate: 5
+  
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  ensure:
+    p95: 1000
+    maxErrorRate: 1
+
+scenarios:
+  - name: "Login and Fetch Profile Sync"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+             email: "loadtest-user@ichange.app"
+             password: "Password123"
+          capture:
+            - json: "$.accessToken"
+              as: "token"
+      - get:
+          url: "/api/user/profile"
+          headers:
+            Authorization: "Bearer {{ token }}"

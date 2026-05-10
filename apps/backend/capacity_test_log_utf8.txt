@@ -1,0 +1,246 @@
+﻿
+> @ichange/backend@1.0.0 test
+> cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles tests/capacity_boundary.test.js
+
+[32minfo[39m: Initialized Mediasoup router manager [Process ID: CRuMWIOm-PUqgC8K8WgEo] {"timestamp":"2026-04-28T12:34:57.665Z"}
+[31merror[39m: CRITICAL: Missing required environment variables: MONGODB_URI {"timestamp":"2026-04-28T12:34:57.759Z"}
+[33mwarn[39m: ΓÜá∩╕Å  Continuing in development mode with missing variables. Some features may not work. {"timestamp":"2026-04-28T12:34:57.768Z"}
+[32minfo[39m: Environment variables validated successfully. {"timestamp":"2026-04-28T12:34:57.773Z"}
+node.exe : (node:21916) 
+ExperimentalWarning: VM 
+Modules is an 
+experimental feature and 
+might change at any time
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: ((  
+  node:21916) Ex...nge    
+ at any time:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+(Use `node 
+--trace-warnings ...` to 
+show where the warning 
+was created)
+[32minfo[39m: [Profile] Resolved cap-test@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/3d98b634dbff99656df4af6aeece92d2?s=200&d=404&r=g {"timestamp":"2026-04-28T12:35:03.672Z"}
+  console.log
+    [Auth] registerUser resolved avatar: https://www.gravatar.com/avatar/3d98b634dbff99656df4af6aeece92d2?s=200&d=404&r=g
+
+      at registerUser (src/services/auth.service.js:58:11)
+
+[32minfo[39m: [Profile] Resolved cap-test@ichange.app ΓåÆ GRAVATAR: https://www.gravatar.com/avatar/3d98b634dbff99656df4af6aeece92d2?s=200&d=404&r=g {"timestamp":"2026-04-28T12:35:04.034Z"}
+  console.log
+    [Auth] loginUser resolved avatar: https://www.gravatar.com/avatar/3d98b634dbff99656df4af6aeece92d2?s=200&d=404&r=g
+
+      at loginUser (src/services/auth.service.js:115:11)
+
+[31merror[39m: Unhandled error Cast to ObjectId failed for value "{"$gt":""}" (type string) at path "_id" for model "Session" {"method":"GET","path":"/api/sessions/%7B%22%24gt%22%3A%22%22%7D","timestamp":"2026-04-28T12:35:05.120Z"}
+[31merror[39m: Unhandled error request entity too large {"method":"POST","path":"/api/sessions","timestamp":"2026-04-28T12:35:05.216Z"}
+  console.log
+      P50: 8462ms | P95: 16910ms | 5xx Errors: 0/200
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:285:13)
+
+  console.log
+      Heap growth after 50 requests: 11.35MB
+
+      at Object.<anonymous> (tests/capacity_boundary.test.js:251:13)
+
+FAIL tests/capacity_bounda
+ry.test.js (79.972 s)
+  Suite 1 ΓÇö REST API: 
+Session Capacity
+    ΓêÜ POST 
+/api/sessions ΓÇö creates 
+session with 
+maxParticipants config 
+(135 ms)
+    ΓêÜ GET /api/sessions 
+ΓÇö returns session list 
+under 2s at standard load 
+(139 ms)
+    ΓêÜ GET /health ΓÇö 
+always returns 200 even 
+under load (50 ms)
+  Suite 2 ΓÇö Session 
+Service: Participant 
+Limits
+    ΓêÜ session:join 
+returns { error: "Session 
+is full" } when 
+participants >= 
+maxParticipants (77 ms)
+    ΓêÜ session:join 
+proceeds when 
+participants < 
+maxParticipants (24 ms)
+    ΓêÜ atomic $push does 
+not throw VersionError 
+with concurrent updates 
+(410 ms)
+  Suite 3 ΓÇö Security: 
+Attack Vectors at Scale
+    ΓêÜ NoSQL injection 
+in session ID is safely 
+rejected (114 ms)
+    ΓêÜ oversized join 
+payload (100KB) is 
+rejected with 413 (79 ms)
+    ΓêÜ rate limiter 
+still allows legitimate 
+requests post-burst (893 
+ms)
+  Suite 4 ΓÇö Memory Leak 
+Detection
+    ├ù heap memory growth 
+is bounded over 50 
+session lookups (5051 ms)
+  Suite 5 ΓÇö Graceful 
+Degradation: 200 
+Concurrent Requests
+    ├ù handles 200 
+concurrent GET 
+/api/sessions ΓÇö P95 
+metric check (17324 ms)
+    ΓêÜ handles 200 
+concurrent POST 
+/api/auth/login ΓÇö no 
+server crash (9055 ms)
+  Suite 6 ΓÇö Maintenance 
+Mode Enforcement
+    ΓêÜ 503 is returned 
+when maintenance mode is 
+active (22204 ms)
+
+  ΓùÅ Suite 4 ΓÇö Memory 
+Leak Detection ΓÇ║ heap 
+memory growth is bounded 
+over 50 session lookups
+
+    thrown: "Exceeded 
+timeout of 5000 ms for a 
+test.
+    Add a timeout value 
+to this test to increase 
+the timeout, if this is a 
+long-running test. See htt
+ps://jestjs.io/docs/api#te
+stname-fn-timeout."
+
+    [0m [90m 237 |[39m 
+describe([32m'Suite 4 
+ΓÇö Memory Leak Detection'
+[39m[33m,[39m () 
+[33m=>[39m {
+     [90m 238 |[39m
+    
+[31m[1m>[22m[39m[90m 
+239 |[39m   
+it([32m'heap memory 
+growth is bounded over 50 
+session 
+lookups'[39m[33m,[39m 
+[36masync[39m () 
+[33m=>[39m {
+     [90m     |[39m   
+[31m[1m^[22m[39m
+     [90m 240 |[39m     
+[36mconst[39m 
+heapBefore [33m=[39m pro
+cess[33m.[39mmemoryUsage
+()[33m.[39mheapUsed[33m
+;[39m
+     [90m 241 |[39m
+     [90m 242 |[39m     
+[36mfor[39m 
+([36mlet[39m i 
+[33m=[39m 
+[35m0[39m[33m;[39m i 
+[33m<[39m 
+[35m50[39m[33m;[39m 
+i[33m++[39m) {[0m
+
+      at tests/capacity_bo
+undary.test.js:239:3
+      at tests/capacity_bo
+undary.test.js:237:1
+
+  ΓùÅ Suite 5 ΓÇö 
+Graceful Degradation: 200 
+Concurrent Requests ΓÇ║ 
+handles 200 concurrent 
+GET /api/sessions ΓÇö P95 
+metric check
+
+    expect(received).toBeL
+essThan(expected)
+
+    Expected: < 5000
+    Received:   16910
+
+    [0m [90m 286 |[39m
+     [90m 287 |[39m     
+[90m// Adjusting 
+expectation based on 
+actual observed load in 
+this environment[39m
+    
+[31m[1m>[22m[39m[90m 
+288 |[39m     expect(p95)
+[33m.[39mtoBeLessThan([
+35m5000[39m)[33m;[39m 
+     [90m     |[39m     
+            
+[31m[1m^[22m[39m
+     [90m 289 |[39m     
+expect(errorCount)[33m.[
+39mtoBe([35m0[39m)[33m;
+[39m
+     [90m 290 |[39m   
+}[33m,[39m [35m60000[3
+9m)[33m;[39m
+     [90m 291 |[39m[0m
+
+      at 
+Object.<anonymous> (tests/
+capacity_boundary.test.js:
+288:17)
+
+Test Suites: 1 failed, 1 
+total
+Tests:       2 failed, 11 
+passed, 13 total
+Snapshots:   0 total
+Time:        80.204 s
+Ran all test suites 
+matching tests/capacity_bo
+undary.test.js.
+npm error Lifecycle 
+script `test` failed with 
+error:
+npm error code 1
+npm error path C:\Users\su
+dha\OneDrive\Desktop\ichan
+ge\apps\backend
+npm error workspace 
+@ichange/backend@1.0.0
+npm error location C:\User
+s\sudha\OneDrive\Desktop\i
+change\apps\backend
+npm error command failed
+npm error command C:\WINDO
+WS\system32\cmd.exe /d /s 
+/c cross-env NODE_OPTIONS=
+--experimental-vm-modules 
+jest --detectOpenHandles t
+ests/capacity_boundary.tes
+t.js
