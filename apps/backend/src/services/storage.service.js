@@ -45,7 +45,7 @@ export async function uploadFile(fileName, buffer, contentType) {
     // Local fallback
     const filePath = path.join(uploadDir, fileName);
     await fs.writeFile(filePath, buffer);
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const backendUrl = process.env.BACKEND_URL || '';
     return `${backendUrl}/uploads/avatars/${fileName}`;
   }
 }

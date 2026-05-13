@@ -39,7 +39,7 @@ export default function GoogleAuthButton({ role = 'student', text = 'Continue wi
     toast.error(
       <div className="flex flex-col gap-1">
         <span className="font-bold">Google Auth Configuration Error</span>
-        <span className="text-xs opacity-80">Please ensure http://localhost:5173 is added to "Authorized JavaScript Origins" in your Google Cloud Console.</span>
+        <span className="text-xs opacity-80">Please ensure {window.location.origin} is added to "Authorized JavaScript Origins" in your Google Cloud Console.</span>
       </div>,
       { duration: 8000 }
     );
