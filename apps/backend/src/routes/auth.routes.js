@@ -31,7 +31,7 @@ router.post(
   [
     body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
     body('email').isEmail().withMessage('Valid email required').customSanitizer(v => (typeof v === 'string' ? v.trim().toLowerCase() : v)),
-    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role').optional().isIn(['student', 'teacher']).withMessage('Invalid role'),
     body('studentId').optional().trim().isLength({ max: 50 }),
   ],

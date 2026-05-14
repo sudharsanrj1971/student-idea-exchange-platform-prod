@@ -64,9 +64,9 @@ export default function RegisterPage() {
       // Auto-fill logic: only if the numeric part reaches 6 digits
       if (last6.length === 6) {
         // Only if password hasn't been manually touched or was already an auto-fill
-        const currentIsAutoDerived = prev.password === 'IC' + prev.studentId.replace(/\D/g, '').slice(-6);
+        const currentIsAutoDerived = prev.password === prev.studentId.replace(/\D/g, '').slice(-6);
         if (!prev.password || currentIsAutoDerived) {
-          const generatedPw = 'IC' + last6;
+          const generatedPw = last6;
           newForm.password = generatedPw;
           newForm.confirm = generatedPw;
           setAutoFilled(true);
@@ -85,8 +85,8 @@ export default function RegisterPage() {
     if (form.password !== form.confirm) {
       return toast.error('Passwords do not match');
     }
-    if (form.password.length < 8) {
-      return toast.error('Password must be at least 8 characters');
+    if (form.password.length < 6) {
+      return toast.error('Password must be at least 6 characters');
     }
 
     if (form.role === 'student' && form.studentId) {
@@ -286,6 +286,7 @@ export default function RegisterPage() {
                     placeholder="e.g. 22CS1049"
                     value={form.studentId}
                     onChange={handleIdChange}
+                    required={form.role === 'student'}
                     autoComplete="off"
                   />
                   {autoFilled && (
@@ -297,7 +298,7 @@ export default function RegisterPage() {
                 {autoFilled && (
                   <p className="mt-1.5 text-xs text-primary-400 flex items-center gap-1">
                     <Wand2 size={11} />
-                    Password auto-set to IC + last 6 digits: <strong className="font-mono tracking-widest">{form.password}</strong>
+                    Password auto-set to last 6 digits: <strong className="font-mono tracking-widest">{form.password}</strong>
                   </p>
                 )}
               </div>
@@ -333,7 +334,7 @@ export default function RegisterPage() {
                   id="reg-password"
                   type={showPassword ? 'text' : 'password'}
                   className={`input-field pr-12 ${autoFilled ? 'border-primary-500/40' : ''}`}
-                  placeholder={autoFilled ? 'Auto-filled from Student ID' : 'Min. 8 characters'}
+                  placeholder={autoFilled ? 'Auto-filled from Student ID' : 'Min. 6 characters'}
                   value={form.password}
                   onChange={(e) => {
                     setForm({ ...form, password: e.target.value });
@@ -401,7 +402,7 @@ export default function RegisterPage() {
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-2.5 text-xs text-emerald-300">
                 <Wand2 size={14} className="shrink-0" />
                 <span>
-                  Password auto-set to IC + last 6 digits:{' '}
+                  Password auto-set to last 6 digits:{' '}
                   <strong className="font-mono tracking-widest">{form.password}</strong>
                   {generatedPwCopied && (
                     <span className="ml-2 text-primary-300 font-medium">✓ Copied to clipboard!</span>

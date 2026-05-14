@@ -45,7 +45,14 @@ export async function uploadFile(fileName, buffer, contentType) {
     // Local fallback
     const filePath = path.join(uploadDir, fileName);
     await fs.writeFile(filePath, buffer);
-    const backendUrl = process.env.BACKEND_URL || '';
-    return `${backendUrl}/uploads/avatars/${fileName}`;
+    
+    // Ensure we have a trailing slash if backendUrl exists, or use absolute path
+    const backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl && process.env.NODE_ENV === 'production') {
+      logger.warn('WARNING: BACKEND_URL is not set in production. Avatar URLs will be relative.');
+    }
+    
+    const baseUrl = backendUrl ? backendUrl.replace(/\/$/, '') : '';
+    return `${baseUrl}/uploads/avatars/${fileName}`;
   }
 }
