@@ -35,6 +35,10 @@ import { User } from './models/User.model.js';
 import { UserProfile } from './models/UserProfile.model.js';
 import { Config } from './models/Config.model.js';
 import crypto from 'crypto';
+import session from 'express-session';
+import RedisStore from 'connect-redis';
+import passport from './config/passport.js';
+import { redisClient } from './config/redis.js';
 
 validateEnv();
 
@@ -69,7 +73,12 @@ if (isProd) {
 
   app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-      ? ['https://student-idea-exchange-platform-prod.pages.dev', process.env.FRONTEND_URL] 
+      ? [
+          'https://student-idea-exchange-platform-prod.pages.dev', 
+          'https://ichangehub.me', 
+          'https://www.ichangehub.me', 
+          process.env.FRONTEND_URL
+        ].filter(Boolean)
       : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
     credentials: true,
   }));
@@ -77,15 +86,13 @@ if (isProd) {
   // ─── Rate limiting ────────────────────────────────────
   app.use('/api', apiRateLimiter);
 
+  // ─── Trust Proxy for Production (Caddy/Azure) ──────────
+  if (isProd) {
+    app.set('trust proxy', 1);
+  }
+
   // ─── Maintenance Mode (Global) ────────────────────────
   app.use(maintenanceMode);
-
-  // ─── Routes ───────────────────────────────────────────
-  app.use('/api/auth', authRoutes);
-  app.use('/api/sessions', sessionRoutes);
-  app.use('/api/attendance', attendanceRoutes);
-  app.use('/api/admin', adminRoutes);
-  app.use('/api/user', userRoutes);
 
   // Serve static uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -183,20 +190,74 @@ if (isProd) {
       try {
         logger.info('📦 Connecting to Redis...');
         await connectRedis();
+
+        // ─── Session Setup (After Redis is connected) ────────
+        const sessionMiddleware = session({
+          store: new RedisStore({ 
+            client: redisClient,
+            prefix: 'ichange:sess:'
+          }),
+          secret: process.env.SESSION_SECRET || 'ichange-secret-key-change-in-prod',
+          resave: false,
+          saveUninitialized: false,
+          name: 'ichange.sid',
+          cookie: {
+            secure: isProd,           // HTTPS only in production
+            httpOnly: true,           // Prevents JS access
+            sameSite: isProd ? 'none' : 'lax', // Cross-site in prod
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+          }
+        });
+        app.use(sessionMiddleware);
+
+        // ─── Passport Initialization ─────────────────────────
+        const passportInit = passport.initialize();
+        const passportSession = passport.session();
+        app.use(passportInit);
+        app.use(passportSession);
+
+        // ─── Routes (MUST be after session/passport) ────────
+        app.use('/api/auth', authRoutes);
+        app.use('/api/sessions', sessionRoutes);
+        app.use('/api/attendance', attendanceRoutes);
+        app.use('/api/admin', adminRoutes);
+        app.use('/api/user', userRoutes);
+
+        logger.info('📦 Initializing Mediasoup workers...');
+        await createWorkerPool();
+        
+        logger.info('📦 Setting up Socket.IO...');
+        setupSocket(server, sessionMiddleware, passportInit, passportSession);
+
       } catch (err) {
         if (isProd) {
           logger.error(`❌ FATAL: Redis connection failed in Production!`, { error: err.message });
           process.exit(1);
         } else {
-          logger.warn(`⚠️  Redis not available`, { error: err.message });
+          logger.warn(`⚠️  Redis not available. Sessions will fall back to memory or fail.`, { error: err.message });
+          // Fallback to memory session if Redis fails in dev
+          const sessionMiddleware = session({
+            secret: 'ichange-dev-secret',
+            resave: false,
+            saveUninitialized: false,
+            cookie: { secure: false }
+          });
+          app.use(sessionMiddleware);
+          const passportInit = passport.initialize();
+          const passportSession = passport.session();
+          app.use(passportInit);
+          app.use(passportSession);
+          
+          // Routes and setup for dev-fallback
+          app.use('/api/auth', authRoutes);
+          app.use('/api/sessions', sessionRoutes);
+          app.use('/api/attendance', attendanceRoutes);
+          app.use('/api/admin', adminRoutes);
+          app.use('/api/user', userRoutes);
+          await createWorkerPool();
+          setupSocket(server, sessionMiddleware, passportInit, passportSession);
         }
       }
-
-      logger.info('📦 Initializing Mediasoup workers...');
-      await createWorkerPool();
-      
-      logger.info('📦 Setting up Socket.IO...');
-      setupSocket(server);
 
       server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {

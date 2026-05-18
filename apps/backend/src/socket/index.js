@@ -1,7 +1,6 @@
 import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User } from '../models/User.model.js';
 import { chatHandler } from './handlers/chat.handler.js';
@@ -18,11 +17,16 @@ export const userCache = new LRUCacheLib({
 
 export let io;
 
-export function setupSocket(httpServer) {
+export function setupSocket(httpServer, sessionMiddleware, passportInit, passportSession) {
   io = new Server(httpServer, {
     cors: {
       origin: process.env.NODE_ENV === 'production' 
-        ? ['https://student-idea-exchange-platform-prod.pages.dev', process.env.FRONTEND_URL] 
+        ? [
+            'https://student-idea-exchange-platform-prod.pages.dev', 
+            'https://ichangehub.me', 
+            'https://www.ichangehub.me', 
+            process.env.FRONTEND_URL
+          ].filter(Boolean)
         : [
             'http://localhost:5173', 'http://127.0.0.1:5173',
             'http://localhost:5174', 'http://127.0.0.1:5174',
@@ -76,50 +80,47 @@ export function setupSocket(httpServer) {
   }
 
   // ── Auth Middleware ────────────────────────────────────
+  const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+
+  io.use(wrap(sessionMiddleware));
+  io.use(wrap(passportInit));
+  io.use(wrap(passportSession));
+
   io.use(async (socket, next) => {
     try {
-      // FIX Bug Class 5: Guard against JWT_SECRET being undefined.
-      // jwt.verify(token, undefined) would silently decode any token — this is a critical
-      // auth bypass. Fail-fast here to avoid that path entirely.
-      if (!process.env.JWT_SECRET) {
-        logger.error('FATAL: JWT_SECRET is not configured. Socket auth cannot proceed.');
-        return next(new Error('Server misconfiguration: authentication is unavailable'));
-      }
-
-      const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace('Bearer ', '');
-      if (!token) return next(new Error('Authentication required'));
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Check cache first
-      let user = userCache.get(decoded.id);
+      const user = socket.request.user;
       
       if (!user) {
-        user = await User.findById(decoded.id).select('name email role isActive studentId profilePic').lean();
-        if (user) {
-          // FIX: If profilePic is empty (default), provide a robust Gravatar fallback immediately.
-          // This ensures that 'session:join' always has a valid avatar for all participants.
-          if (!user.profilePic || user.profilePic.trim() === '') {
-            const hash = crypto.createHash('md5').update(user.email.trim().toLowerCase()).digest('hex');
-            user.profilePic = `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
-          }
-          
-          // Provide 'avatar' alias for frontend compatibility
-          user.avatar = user.profilePic;
-          userCache.set(decoded.id, user);
-          logger.debug(`[Socket Auth] Cached user ${user.name} with profilePic: ${user.profilePic}`);
-        }
-      } else {
-        logger.debug(`[Socket Auth] Served cached user ${user.name} with profilePic: ${user.profilePic}`);
+        logger.warn('[Socket Auth] No user found in session');
+        return next(new Error('Authentication required'));
       }
 
-      if (!user || !user.isActive) return next(new Error('User not found'));
+      if (!user.isActive) {
+        return next(new Error('User account is inactive'));
+      }
 
-      socket.user = user;
+      // Populate user data from cache or DB for consistency
+      let fullUser = userCache.get(user._id.toString());
+      
+      if (!fullUser) {
+        fullUser = await User.findById(user._id).select('name email role isActive studentId profilePic').lean();
+        if (fullUser) {
+          if (!fullUser.profilePic || fullUser.profilePic.trim() === '') {
+            const hash = crypto.createHash('md5').update(fullUser.email.trim().toLowerCase()).digest('hex');
+            fullUser.profilePic = `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
+          }
+          fullUser.avatar = fullUser.profilePic;
+          userCache.set(user._id.toString(), fullUser);
+        }
+      }
+
+      if (!fullUser) return next(new Error('User not found'));
+
+      socket.user = fullUser;
       next();
     } catch (err) {
       logger.error('Socket Auth Error', { error: err.message });
-      next(new Error('Invalid or expired token'));
+      next(new Error('Authentication failed'));
     }
   });
 

@@ -1,2 +1,2 @@
-/api/* http://172.188.48.153/api/:splat 200
-/socket.io/* http://172.188.48.153/socket.io/:splat 200
+/api/* https://api.ichangehub.me/api/:splat 200
+/socket.io/* https://api.ichangehub.me/socket.io/:splat 200

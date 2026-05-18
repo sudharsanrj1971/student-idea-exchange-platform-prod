@@ -10,6 +10,7 @@ import {
   refreshAccessToken,
   logoutUser,
 } from '../services/auth.service.js';
+import passport from 'passport';
 
 const router = Router();
 
@@ -71,7 +72,42 @@ router.post(
   }
 );
 
-// POST /api/auth/google
+// ── Initiate Google OAuth ──
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email'],
+  prompt: 'select_account'
+}));
+
+// ── Google OAuth Callback ──
+router.get('/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: `${process.env.FRONTEND_URL || 'https://student-idea-exchange-platform-prod.pages.dev'}/login?error=google_auth_failed`,
+    session: true
+  }),
+  (req, res) => {
+    console.log(`✅ Auth success for: ${req.user?.email}`);
+    res.redirect(`${process.env.FRONTEND_URL || 'https://student-idea-exchange-platform-prod.pages.dev'}/dashboard`);
+  }
+);
+
+// ── Auth Status (frontend polls this) ──
+router.get('/status', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.json({
+      authenticated: true,
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        avatar: req.user.profilePic || req.user.avatar,
+        role: req.user.role
+      }
+    });
+  }
+  res.status(401).json({ authenticated: false });
+});
+
+// Legacy POST /api/auth/google (kept for backward compatibility during transition)
 router.post(
   '/google',
   authRateLimiter,
@@ -213,16 +249,32 @@ router.get('/sync-profile/:email', async (req, res, next) => {
 });
 
 // POST /api/auth/logout
-router.post('/logout', authenticate, async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
-    await logoutUser(req.user._id, refreshToken);
+router.post('/logout', (req, res, next) => {
+  // 1. Passport/Session logout
+  req.logout((err) => {
+    if (err) return next(err);
     
-    res.clearCookie('refreshToken', { path: '/api/auth' });
-    res.json({ message: 'Logged out successfully' });
-  } catch (err) {
-    next(err);
-  }
+    // 2. Destroy session in Redis
+    req.session.destroy((destroyErr) => {
+      // 3. Clear cookies
+      res.clearCookie('ichange.sid', {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+      
+      // Also clear legacy refresh token cookie
+      res.clearCookie('refreshToken', { path: '/api/auth' });
+
+      if (destroyErr) {
+        console.error('Session destroy error:', destroyErr);
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
 });
 
 // GET /api/auth/me

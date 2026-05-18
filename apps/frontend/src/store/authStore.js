@@ -7,11 +7,11 @@ export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      accessToken: null,
       _isLoggingOut: false,
+      _isChecking: false,
 
-      setAuth: (user, accessToken) =>
-        set({ user, accessToken }),
+      setAuth: (user) =>
+        set({ user }),
 
       logout: async () => {
         if (get()._isLoggingOut) return;
@@ -23,9 +23,29 @@ export const useAuthStore = create(
           console.warn('[Auth] Logout API call failed or timed out:', err.message);
         } finally {
           socketService.disconnect();
-          set({ user: null, accessToken: null, _isLoggingOut: false });
+          set({ user: null, _isLoggingOut: false });
           try { localStorage.removeItem('ichange-auth'); } catch (_) {}
         }
+      },
+
+      checkAuth: async () => {
+        if (get()._isChecking) return;
+        set({ _isChecking: true });
+        try {
+          const { data } = await api.get('/api/auth/status');
+          if (data.authenticated) {
+            set({ user: data.user });
+            return data.user;
+          }
+        } catch (err) {
+          // If 401, it's handled by the interceptor which calls logout()
+          if (err.response?.status !== 401) {
+            console.error('[Auth] checkAuth failed:', err.message);
+          }
+        } finally {
+          set({ _isChecking: false });
+        }
+        return null;
       },
 
       updateUser: (updates) =>
@@ -84,7 +104,6 @@ export const useAuthStore = create(
       name: 'ichange-auth',
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
       }),
     }
   )

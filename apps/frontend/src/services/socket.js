@@ -12,23 +12,13 @@ class SocketService {
   connect() {
     if (this.socket?.connected) return this.socket;
 
-    const { accessToken } = useAuthStore.getState();
-
     this.socket = io(import.meta.env.VITE_API_URL || '', {
-      auth: { token: accessToken },
+      withCredentials: true, // Send session cookie
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       transports: ['websocket', 'polling'],
-    });
-
-    // ── Update token when store changes ──
-    if (this._unsub) this._unsub();
-    this._unsub = useAuthStore.subscribe((state) => {
-      if (this.socket && state.accessToken) {
-        this.socket.auth.token = state.accessToken;
-      }
     });
 
     this.socket.on('connect', () => {
@@ -38,14 +28,10 @@ class SocketService {
 
     this.socket.on('connect_error', async (err) => {
       console.warn('⚠️ Socket connection error:', err.message);
-      
-      // If auth error, we might need a refresh. 
-      // Most of the time, the API interceptor will catch expiration in the background.
-      // We manually check if we have a new token and try again.
-      if (err.message === 'Authentication required' || err.message === 'Invalid or expired token') {
-        const { accessToken } = useAuthStore.getState();
-        this.socket.auth.token = accessToken;
-        // Don't kill it yet, let it try to reconnect with the new token
+      if (err.message === 'Authentication required' || err.message === 'Invalid session') {
+        // Handle unauthorized socket connection
+        const { logout } = useAuthStore.getState();
+        logout();
       }
     });
 
@@ -60,9 +46,6 @@ class SocketService {
     this.socket.on('reconnect_attempt', (attempt) => {
       this.reconnectAttempts = attempt;
       console.log(`🔄 Reconnect attempt ${attempt}`);
-      // Refresh the token before trying to reconnect if needed
-      const { accessToken } = useAuthStore.getState();
-      this.socket.auth.token = accessToken;
     });
 
     this.socket.on('reconnect', () => {

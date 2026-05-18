@@ -4,6 +4,8 @@ import { logger } from './logger.js';
 export let redisClient = null;
 
 export async function connectRedis() {
+  const isTLS = (process.env.REDIS_URL || '').startsWith('rediss://');
+  
   const client = createClient({ 
     url: process.env.REDIS_URL || 'redis://localhost:6379',
     // ── High-Concurrency Redis Tuning ──────────────────────
@@ -13,6 +15,8 @@ export async function connectRedis() {
       connectTimeout: 2000,      // 2s connection timeout in dev to avoid hung startup
       keepAlive: 5000,           // TCP keepalive every 5s — detect dead connections fast
       noDelay: true,             // Disable Nagle algorithm for low-latency pub/sub
+      tls: isTLS,                // Support TLS for Upstash/Production
+      rejectUnauthorized: false,  // Often required for managed Redis like Upstash
       reconnectStrategy: (retries) => {
         if (retries > 10) {
           logger.warn('Redis reconnection failed after 10 attempts. Stopping retries.');
