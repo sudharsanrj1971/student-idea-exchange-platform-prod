@@ -33,9 +33,10 @@ export default function DashboardPage() {
   const fetchSessions = async () => {
     try {
       const { data } = await api.get('/api/sessions');
-      setSessions(data.sessions);
-    } catch {
-      toast.error('Failed to load sessions');
+      setSessions(data.sessions || []);
+    } catch (err) {
+      console.warn('[Dashboard] Failed to load sessions, defaulting to empty list:', err.message || err);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
