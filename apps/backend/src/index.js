@@ -51,6 +51,7 @@ if (isProd) {
   logger.info(`Server is running in production mode [PID: ${process.pid}]`);
 }
   const app = express();
+  app.set('trust proxy', 1);
   const server = http.createServer(app);
 
   // ─── Security & Performance ──────────────────────────
@@ -87,11 +88,6 @@ if (isProd) {
 
   // ─── Rate limiting ────────────────────────────────────
   app.use('/api', apiRateLimiter);
-
-  // ─── Trust Proxy for Production (Caddy/Azure) ──────────
-  if (isProd) {
-    app.set('trust proxy', 1);
-  }
 
   // ─── Maintenance Mode (Global) ────────────────────────
   app.use(maintenanceMode);
