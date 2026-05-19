@@ -36,7 +36,7 @@ import { UserProfile } from './models/UserProfile.model.js';
 import { Config } from './models/Config.model.js';
 import crypto from 'crypto';
 import session from 'express-session';
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import passport from './config/passport.js';
 import { redisClient } from './config/redis.js';
 

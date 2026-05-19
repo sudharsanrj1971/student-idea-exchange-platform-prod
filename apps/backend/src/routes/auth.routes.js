@@ -101,11 +101,15 @@ router.get('/google/callback',
 );
 
 // ── Auth Status (frontend polls this) ──
-router.get('/status', authenticate, (req, res) => {
-  res.json({
-    authenticated: true,
-    user: req.user
-  });
+router.get('/status', authenticate, async (req, res) => {
+  try {
+    res.json({
+      authenticated: true,
+      user: req.user
+    });
+  } catch (err) {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
 });
 
 // Legacy POST /api/auth/google (kept for backward compatibility during transition)
