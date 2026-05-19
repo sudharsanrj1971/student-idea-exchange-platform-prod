@@ -8,7 +8,7 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       _isLoggingOut: false,
-      _isChecking: false,
+      _isChecking: typeof window !== 'undefined' ? (!!localStorage.getItem('token') || window.location.search.includes('token=')) : false,
 
       setAuth: (user, token) => {
         if (token) {
@@ -38,23 +38,28 @@ export const useAuthStore = create(
       checkAuth: async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-          set({ user: null });
+          set({ user: null, _isChecking: false });
           return null;
         }
 
-        if (get()._isChecking) return;
         set({ _isChecking: true });
         try {
-          const { data } = await api.get('/api/auth/status');
+          const { data } = await api.get('/api/auth/status', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           if (data.authenticated) {
             set({ user: data.user });
             return data.user;
           }
         } catch (err) {
-          // If 401, it's handled by the interceptor which calls logout()
-          if (err.response?.status !== 401) {
-            console.error('[Auth] checkAuth failed:', err.message);
-          }
+          console.error('[Auth] checkAuth failed:', err.message);
+          set({ user: null });
+          try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('ichange-auth');
+          } catch (_) {}
         } finally {
           set({ _isChecking: false });
         }

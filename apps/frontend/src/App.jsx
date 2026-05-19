@@ -14,8 +14,12 @@ const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
 const JoinPage = lazy(() => import('./pages/JoinPage.jsx'));
 
 function ProtectedRoute({ children, requireAdmin = false }) {
-  const { user } = useAuthStore();
+  const { user, _isChecking } = useAuthStore();
   const location = useLocation();
+  
+  if (_isChecking) {
+    return <LoadingScreen />;
+  }
   
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -29,9 +33,14 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 }
 
 function PublicRoute({ children }) {
-  const { user } = useAuthStore();
+  const { user, _isChecking } = useAuthStore();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
+  
+  if (_isChecking) {
+    return <LoadingScreen />;
+  }
+  
   return user ? <Navigate to={from} replace /> : children;
 }
 
