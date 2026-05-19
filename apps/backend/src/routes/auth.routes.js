@@ -86,7 +86,8 @@ router.get('/google/callback',
   }),
   (req, res) => {
     console.log(`✅ Auth success for: ${req.user?.email}`);
-    res.redirect(process.env.FRONTEND_URL || 'https://student-idea-exchange-platform-prod.pages.dev');
+    const frontendUrl = process.env.FRONTEND_URL || 'https://student-idea-exchange-platform-prod.pages.dev';
+    res.redirect(`${frontendUrl}/dashboard`);
   }
 );
 

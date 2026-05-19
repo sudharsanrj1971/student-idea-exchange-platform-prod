@@ -200,10 +200,10 @@ if (isProd) {
           saveUninitialized: false,
           name: 'ichange.sid',
           cookie: {
-            secure: isProd,           // HTTPS only in production
-            httpOnly: true,           // Prevents JS access
-            sameSite: isProd ? 'none' : 'lax', // Cross-site in prod
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            secure: true,
+            sameSite: 'none',
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000
           }
         });
         app.use(sessionMiddleware);
