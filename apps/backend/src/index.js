@@ -71,15 +71,17 @@ if (isProd) {
     next();
   });
 
+  const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? [
+        'https://student-idea-exchange-platform-prod.pages.dev', 
+        'https://ichangehub.me', 
+        'https://www.ichangehub.me', 
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
+
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-      ? [
-          'https://student-idea-exchange-platform-prod.pages.dev', 
-          'https://ichangehub.me', 
-          'https://www.ichangehub.me', 
-          process.env.FRONTEND_URL
-        ].filter(Boolean)
-      : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   }));
 
