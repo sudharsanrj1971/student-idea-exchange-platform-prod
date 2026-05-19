@@ -8,7 +8,8 @@ export function validateEnv() {
     'JWT_SECRET',
     'JWT_REFRESH_SECRET',
     'REDIS_URL',
-    'FRONTEND_URL'
+    'FRONTEND_URL',
+    'GOOGLE_CALLBACK_URL'
   ] : [
     'MONGODB_URI' // Only MongoDB is strictly required for dev if others have defaults
   ];

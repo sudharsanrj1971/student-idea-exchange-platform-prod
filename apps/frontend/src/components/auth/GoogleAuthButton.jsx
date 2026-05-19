@@ -6,7 +6,7 @@ export default function GoogleAuthButton({ role = 'student', text = 'Continue wi
   const handleLogin = () => {
     setIsLoading(true);
     // Use the backend-initiated OAuth flow
-    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const baseUrl = import.meta.env.VITE_API_URL || 'https://api.ichangehub.me';
     const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     
     // Pass role as a query param if needed, or rely on backend default
