@@ -111,7 +111,7 @@ export default function RegisterPage() {
         ...data.user,
         profilePic: data.user.profilePic || data.user.avatar
       };
-      setAuth(user);
+      setAuth(user, data.accessToken);
       // Force immediate profile sync after registration
       await refreshProfile();
       toast.success(`Welcome to iChange, ${data.user.name}!`);

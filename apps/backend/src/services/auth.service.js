@@ -13,7 +13,7 @@ import { UserProfile } from '../models/UserProfile.model.js';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-function signAccessToken(user) {
+export function signAccessToken(user) {
   const { _id, name, email, role, profilePic } = user;
   return jwt.sign(
     { id: _id, name, email, role, profilePic }, 
@@ -22,7 +22,7 @@ function signAccessToken(user) {
   );
 }
 
-function signRefreshToken(userId) {
+export function signRefreshToken(userId) {
   return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   });

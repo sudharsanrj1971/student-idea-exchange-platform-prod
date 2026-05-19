@@ -10,8 +10,12 @@ export const useAuthStore = create(
       _isLoggingOut: false,
       _isChecking: false,
 
-      setAuth: (user) =>
-        set({ user }),
+      setAuth: (user, token) => {
+        if (token) {
+          try { localStorage.setItem('token', token); } catch (_) {}
+        }
+        set({ user });
+      },
 
       logout: async () => {
         if (get()._isLoggingOut) return;
@@ -24,11 +28,20 @@ export const useAuthStore = create(
         } finally {
           socketService.disconnect();
           set({ user: null, _isLoggingOut: false });
-          try { localStorage.removeItem('ichange-auth'); } catch (_) {}
+          try {
+            localStorage.removeItem('ichange-auth');
+            localStorage.removeItem('token');
+          } catch (_) {}
         }
       },
 
       checkAuth: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          set({ user: null });
+          return null;
+        }
+
         if (get()._isChecking) return;
         set({ _isChecking: true });
         try {

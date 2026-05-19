@@ -76,7 +76,7 @@ export default function LoginPage() {
         ...data.user,
         profilePic: data.user.profilePic || data.user.avatar
       };
-      setAuth(user);
+      setAuth(user, data.accessToken);
       // Force immediate profile sync
       await refreshProfile();
       toast.success(`Welcome back, ${data.user.name}!`);

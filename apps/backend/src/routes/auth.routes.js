@@ -9,6 +9,8 @@ import {
   googleLogin,
   refreshAccessToken,
   logoutUser,
+  signAccessToken,
+  signRefreshToken,
 } from '../services/auth.service.js';
 import passport from 'passport';
 
@@ -86,26 +88,24 @@ router.get('/google/callback',
   }),
   (req, res) => {
     console.log(`✅ Auth success for: ${req.user?.email}`);
+    
+    // Sign JWT access token and refresh token
+    const accessToken = signAccessToken(req.user);
+    const refreshToken = signRefreshToken(req.user._id);
+    
+    setRefreshTokenCookie(res, refreshToken);
+    
     const frontendUrl = process.env.FRONTEND_URL || 'https://student-idea-exchange-platform-prod.pages.dev';
-    res.redirect(`${frontendUrl}/dashboard`);
+    res.redirect(`${frontendUrl}/dashboard?token=${accessToken}`);
   }
 );
 
 // ── Auth Status (frontend polls this) ──
-router.get('/status', (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.json({
-      authenticated: true,
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        avatar: req.user.profilePic || req.user.avatar,
-        role: req.user.role
-      }
-    });
-  }
-  res.status(401).json({ authenticated: false });
+router.get('/status', authenticate, (req, res) => {
+  res.json({
+    authenticated: true,
+    user: req.user
+  });
 });
 
 // Legacy POST /api/auth/google (kept for backward compatibility during transition)

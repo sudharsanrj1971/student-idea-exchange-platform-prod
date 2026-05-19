@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useAuthStore } from './store/authStore.js';
 import { LoadingScreen } from './components/ui/LoadingScreen.jsx';
 import ProfileRevalidator from './components/auth/ProfileRevalidator.jsx';
@@ -36,6 +36,21 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      try {
+        localStorage.setItem('token', token);
+      } catch (_) {}
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <BrowserRouter>
       <ProfileRevalidator />
