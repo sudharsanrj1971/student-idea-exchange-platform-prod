@@ -106,13 +106,8 @@ if (isProd) {
     });
   });
 
-  // ─── 404 handler ──────────────────────────────────────
-  app.use((_req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-  });
-
-  // ─── Global error handler ─────────────────────────────
-  app.use(globalErrorHandler);
+  // NOTE: 404 and global error handlers are registered inside bootstrap()
+  // AFTER routes, to ensure correct Express middleware ordering.
 
   async function bootstrap() {
     try {
@@ -221,6 +216,14 @@ if (isProd) {
         app.use('/api/admin', adminRoutes);
         app.use('/api/user', userRoutes);
 
+        // ─── 404 handler (MUST be after routes) ─────────────
+        app.use((_req, res) => {
+          res.status(404).json({ error: 'Route not found' });
+        });
+
+        // ─── Global error handler ────────────────────────────
+        app.use(globalErrorHandler);
+
         logger.info('📦 Initializing Mediasoup workers...');
         await createWorkerPool();
         
@@ -252,6 +255,14 @@ if (isProd) {
           app.use('/api/attendance', attendanceRoutes);
           app.use('/api/admin', adminRoutes);
           app.use('/api/user', userRoutes);
+
+          // ─── 404 handler (MUST be after routes) ─────────────
+          app.use((_req, res) => {
+            res.status(404).json({ error: 'Route not found' });
+          });
+
+          // ─── Global error handler ────────────────────────────
+          app.use(globalErrorHandler);
           await createWorkerPool();
           setupSocket(server, sessionMiddleware, passportInit, passportSession);
         }
