@@ -317,10 +317,31 @@ async function handleLeave(io, socket, sessionId) {
     const userId = socket.user._id.toString();
     await socket.leave(sessionId);
 
+    // First, check if this socket is still the active one for this user.
+    // On mobile reconnect, the socketId in DB may have already been updated
+    // to the new socket. In that case, this old socket's leave should be a no-op.
+    const currentSession = await Session.findById(sessionId, { participants: 1 }).lean();
+    if (!currentSession) return;
+
+    const participantEntry = currentSession.participants.find(
+      p => p.userId.toString() === userId
+    );
+
+    // If user is not in the session at all, nothing to do
+    if (!participantEntry) return;
+
+    // If the participant's socketId has already been updated to a different socket
+    // (i.e. the user reconnected with a new socket), skip leave entirely.
+    // This prevents the old socket's disconnect from removing the reconnected user.
+    if (participantEntry.socketId !== socket.id) {
+      logger.debug(`Skipping leave for stale socket ${socket.id} — user ${userId} already reconnected with ${participantEntry.socketId}`);
+      return;
+    }
+
     // Single atomic update: remove socket from participants and conditionally set isActive
     const updatedSession = await Session.findByIdAndUpdate(
       sessionId,
-      { $pull: { participants: { socketId: socket.id } } },
+      { $pull: { participants: { userId: socket.user._id, socketId: socket.id } } },
       { new: true, lean: true, projection: { participants: 1, isActive: 1 } }
     );
     if (!updatedSession) return;
