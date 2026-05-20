@@ -77,10 +77,11 @@ export default function LoginPage() {
         profilePic: data.user.profilePic || data.user.avatar
       };
       setAuth(user, data.accessToken);
-      // Force immediate profile sync
-      await refreshProfile();
       toast.success(`Welcome back, ${data.user.name}!`);
-      navigate(from, { replace: true });
+      const destination = (from && from !== '/login') ? from : '/dashboard';
+      navigate(destination, { replace: true });
+      // Sync profile in background after navigation
+      refreshProfile().catch(() => {});
     } catch (err) {
       toast.error(err.response?.data?.error || 'Login failed');
     } finally {
