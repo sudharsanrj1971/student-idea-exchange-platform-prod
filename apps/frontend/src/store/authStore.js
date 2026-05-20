@@ -56,7 +56,7 @@ export const useAuthStore = create(
           }
         } catch (err) {
           console.error('[Auth] checkAuth failed:', err.message);
-          set({ user: null });
+          set({ user: null, _isChecking: false });
           try {
             localStorage.removeItem('token');
             localStorage.removeItem('ichange-auth');
