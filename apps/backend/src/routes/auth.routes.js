@@ -287,4 +287,6 @@ router.get('/me', authenticate, (req, res) => {
   res.json({ user: req.user });
 });
 
+router.get("/status", authenticate, (req, res) => { res.json({ user: req.user }); });
+
 export default router;
