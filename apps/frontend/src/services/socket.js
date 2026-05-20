@@ -12,7 +12,10 @@ class SocketService {
   connect() {
     if (this.socket?.connected) return this.socket;
 
+    const stored = localStorage.getItem('ichange-auth');
+    const token = stored ? JSON.parse(stored)?.state?.accessToken : null;
     this.socket = io(import.meta.env.VITE_API_URL || '', {
+      auth: { token },
       withCredentials: true, // Send session cookie
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
