@@ -38,7 +38,7 @@ export default function SessionPage() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [connectionState, setConnectionState] = useState('connecting');
   const [isReconnecting, setIsReconnecting] = useState(false);
-  const [streams, setStreams] = useState(new Map()); // producerId → stream info
+  const [remoteStreams, setRemoteStreams] = useState(new Map()); // producerId → stream info
   const [consumerStats, setConsumerStats] = useState(new Map()); // consumerId → { quality: 'good'|'fair'|'poor' }
   const [localStream, setLocalStream] = useState(null); // BUG FIX: was missing, caused ReferenceError
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -210,6 +210,7 @@ export default function SessionPage() {
       setConnectionState('connected');
       setIsReconnecting(false);
       toast.success('Reconnected!');
+      handleSocketConnect(socket);
     });
 
     // Room events (Throttled list updates)
@@ -313,7 +314,7 @@ export default function SessionPage() {
     });
 
     socket.on('media:producerClosed', ({ producerId }) => {
-      setStreams((prev) => {
+      setRemoteStreams((prev) => {
         if (!prev.has(producerId)) return prev;
         const newMap = new Map(prev);
         newMap.delete(producerId);
@@ -346,6 +347,13 @@ export default function SessionPage() {
     try {
       setConnectionState('connected');
       setIsReconnecting(false);
+
+      // On reconnect/rejoin: clean up existing WebRTC transports & clear remoteStreams state
+      if (webrtcService.sessionId) {
+        console.log('[WebRTC] Reconnecting/rejoining: cleaning up old session media');
+        webrtcService.closeAll();
+        setRemoteStreams(new Map());
+      }
 
       // Emit session:join with an acknowledgment callback.
       // The server calls ack() AFTER socket.join(sessionId) is complete,
@@ -479,18 +487,22 @@ export default function SessionPage() {
 
   const handleNewProducer = async ({ producerId, socketId, kind, appData }) => {
     if (socketId === socketRef.current?.id) return;
-    if (streams.has(producerId)) return; // Already consuming
+    if (remoteStreams.has(producerId)) return; // Already consuming
 
     try {
       const consumer = await webrtcService.consumeProducer(producerId);
-      const stream = new MediaStream([consumer.track]);
+      const track = consumer.track;
+      const stream = new MediaStream([track]);
       
-      setStreams(prev => {
+      setRemoteStreams(prev => {
         if (prev.has(producerId)) return prev; // Final check
         const newMap = new Map(prev);
         newMap.set(producerId, { producerId, stream, socketId, kind, appData });
         return newMap;
       });
+
+      // Confirm the consumer is resumed on the server
+      socketRef.current?.emit('media:resumeConsumer', { consumerId: consumer.id });
 
       if (appData?.screen) {
         setPinnedId(producerId);
@@ -512,8 +524,16 @@ export default function SessionPage() {
   const startLocalStream = async () => {
     try {
       if (localStreamRef.current && localStreamRef.current.active) {
-        console.log('[DEBUG] Local stream already active, skipping restart');
-        return localStreamRef.current;
+        console.log('[DEBUG] Local stream already active, publishing existing stream');
+        const stream = localStreamRef.current;
+        await webrtcService.produceStream(stream, {
+          userId: user?._id,
+          name: user?.name,
+          role: user?.role,
+          type: 'camera',
+        });
+        setRemoteStreams(prev => new Map(prev));
+        return stream;
       }
 
       let stream;
@@ -574,7 +594,7 @@ export default function SessionPage() {
         type: 'camera',
       });
 
-      setStreams(prev => new Map(prev));
+      setRemoteStreams(prev => new Map(prev));
       return stream;
     } catch (err) {
       console.error('Media access error:', err);
@@ -974,7 +994,7 @@ export default function SessionPage() {
         {/* Video area */}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
             <VideoGrid
-              streams={streams}
+              streams={remoteStreams}
               localStream={localStream}
               localUser={user}
               isMuted={isMuted}

@@ -1,4 +1,21 @@
 import { getWorkerByIndex, getLeastLoadedWorkerIndex, incrementWorkerLoad, decrementWorkerLoad } from './worker.js';
+
+export async function getAllRouters() {
+  const routers = [];
+  for (const [sessionId, routerPromise] of routerPromises.entries()) {
+    try {
+      const router = await routerPromise;
+      if (router) routers.push(router);
+    } catch (e) {
+      logger.error('Failed to get router for session', { sessionId, error: e.message });
+    }
+  }
+  return routers;
+}
+
+// Alias for compatibility
+export const getRouterForSession = getRouter;
+
 import { mediasoupConfig } from '../config/mediasoup.js';
 import { Session } from '../models/Session.model.js';
 import { logger } from '../config/logger.js';

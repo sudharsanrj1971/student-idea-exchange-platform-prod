@@ -273,6 +273,7 @@ class WebRTCService {
 
     // Resume consumer
     await this._request('media:resumeConsumer', { consumerId });
+    consumer.resume();
 
     return consumer;
   }

@@ -193,8 +193,26 @@ export function mediaHandler(io, socket) {
       if (!transport)
         return mediaError(socket, 'media:consumed', 'Transport not found');
 
-      if (!router.canConsume({ producerId, rtpCapabilities }))
-        return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
+      // Try to consume locally; if not possible, attempt to pipe from the source router
+      if (!router.canConsume({ producerId, rtpCapabilities })) {
+        // Find the session that owns this producer
+        const srcSession = await Session.findOne({ 'activeProducers.producerId': producerId }).select('_id').lean();
+        if (srcSession && srcSession._id.toString() !== sessionId) {
+          const sourceRouter = await getRouter(srcSession._id);
+          try {
+            await sourceRouter.pipeToRouter({ producerId, router });
+            // Retry canConsume after piping
+            if (!router.canConsume({ producerId, rtpCapabilities })) {
+              return mediaError(socket, 'media:consumed', 'Cannot consume this producer even after piping');
+            }
+          } catch (pipeErr) {
+            logger.error('Pipe producer error', { error: pipeErr.message });
+            return mediaError(socket, 'media:consumed', 'Failed to pipe producer across workers');
+          }
+        } else {
+          return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
+        }
+      }
 
       const consumer = await transport.consume({ producerId, rtpCapabilities, paused: true });
 
