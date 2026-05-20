@@ -120,6 +120,9 @@ export const useAuthStore = create(
     }),
     {
       name: 'ichange-auth',
+      onRehydrateStorage: () => (state) => {
+        if (state) state._isChecking = false;
+      },
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
