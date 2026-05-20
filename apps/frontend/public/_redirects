@@ -1,3 +1,2 @@
-/api/* https://api.ichangehub.me/api/:splat 200
-/socket.io/* https://api.ichangehub.me/socket.io/:splat 200
-/* /index.html 200
+/api/* https://api.ichangehub.me/api/:splat 301
+/socket.io/* https://api.ichangehub.me/socket.io/:splat 301
