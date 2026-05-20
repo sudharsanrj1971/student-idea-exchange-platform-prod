@@ -14,7 +14,7 @@ export const useAuthStore = create(
         if (token) {
           try { localStorage.setItem('token', token); } catch (_) {}
         }
-        set({ user });
+        set({ user, accessToken: token});
       },
 
       logout: async () => {
