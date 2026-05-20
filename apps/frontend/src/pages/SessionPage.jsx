@@ -228,6 +228,7 @@ export default function SessionPage() {
     socket.on('session:left_toast', (left) => {
       if (left.id !== user?._id) {
         toast(`${left.name} left`, { icon: '🚪', duration: 3000 });
+        removeParticipant(left.id);
       }
     });
 
