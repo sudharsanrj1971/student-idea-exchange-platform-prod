@@ -88,10 +88,20 @@ export function setupSocket(httpServer, sessionMiddleware, passportInit, passpor
 
   io.use(async (socket, next) => {
     try {
-      const user = socket.request.user;
-      
+      let user = socket.request.user;
       if (!user) {
-        logger.warn('[Socket Auth] No user found in session');
+        try {
+          const jwt = (await import('jsonwebtoken')).default;
+          const token = socket.handshake.auth?.token || (socket.handshake.headers?.authorization || '').replace('Bearer ', '');
+          if (token) {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const { User: UserModel } = await import('../models/User.model.js');
+            user = await UserModel.findById(decoded.id).select('-passwordHash -refreshTokens');
+          }
+        } catch (_) {}
+      }
+      if (!user) {
+        logger.warn('[Socket Auth] No user found in session or JWT');
         return next(new Error('Authentication required'));
       }
 
