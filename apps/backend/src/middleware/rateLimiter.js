@@ -14,7 +14,7 @@ export const apiRateLimiter = rateLimit({
 // Strict limiter for auth endpoints
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isLoadTest ? 1000000 : 20,
+  max: isLoadTest ? 1000000 : 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts — try again in 15 minutes' },
@@ -31,7 +31,7 @@ export const linkCodeRateLimiter = rateLimit({
 // Profile update limiter
 export const profileRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isLoadTest ? 1000000 : 5,
+  max: isLoadTest ? 1000000 : 50,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many profile updates — please try again later' },

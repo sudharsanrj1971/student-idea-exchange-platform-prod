@@ -11,7 +11,8 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const stored = localStorage.getItem('ichange-auth');
+    const token = stored ? JSON.parse(stored)?.state?.accessToken : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
