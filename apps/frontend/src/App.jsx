@@ -35,13 +35,14 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 function PublicRoute({ children }) {
   const { user, _isChecking } = useAuthStore();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const from = location.state?.from?.pathname;
+  const safeDest = (from && from !== "/login" && from !== "/register") ? from : "/dashboard";
   
   if (_isChecking) {
     return <LoadingScreen />;
   }
   
-  return user ? <Navigate to={from} replace /> : children;
+  return user ? <Navigate to={safeDest} replace /> : children;
 }
 
 export default function App() {
