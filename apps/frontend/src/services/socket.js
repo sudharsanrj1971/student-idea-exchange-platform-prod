@@ -31,11 +31,6 @@ class SocketService {
 
     this.socket.on('connect_error', async (err) => {
       console.warn('⚠️ Socket connection error:', err.message);
-      if (err.message === 'Authentication required' || err.message === 'Invalid session') {
-        // Handle unauthorized socket connection
-        const { logout } = useAuthStore.getState();
-        logout();
-      }
     });
 
     this.socket.on('disconnect', (reason) => {

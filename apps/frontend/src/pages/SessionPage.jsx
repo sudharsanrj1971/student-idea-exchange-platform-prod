@@ -378,7 +378,7 @@ export default function SessionPage() {
 
           const { producers } = await webrtcService._request('media:getProducers', { sessionId });
           for (const p of producers) {
-            handleNewProducer(p);
+            await handleNewProducer(p);
           }
         } catch (err) {
           console.error('WebRTC initialization failed:', err);
@@ -486,6 +486,10 @@ export default function SessionPage() {
 
 
   const handleNewProducer = async ({ producerId, socketId, kind, appData }) => {
+    if (!webrtcService.device?.loaded) {
+      setTimeout(() => handleNewProducer({ producerId, socketId, kind, appData }), 1000);
+      return;
+    }
     if (socketId === socketRef.current?.id) return;
     if (remoteStreams.has(producerId)) return; // Already consuming
 
