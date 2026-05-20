@@ -36,7 +36,8 @@ export const useAuthStore = create(
       },
 
       checkAuth: async () => {
-        const token = localStorage.getItem('token');
+        const stored = localStorage.getItem('ichange-auth');
+        const token = get().accessToken || (stored ? JSON.parse(stored)?.state?.accessToken : null);
         if (!token) {
           set({ user: null, _isChecking: false });
           return null;
@@ -49,8 +50,8 @@ export const useAuthStore = create(
               Authorization: `Bearer ${token}`
             }
           });
-          if (data.authenticated) {
-            set({ user: data.user });
+          if (data.user) {
+            set({ user: data.user, _isChecking: false });
             return data.user;
           }
         } catch (err) {
