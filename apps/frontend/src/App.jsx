@@ -51,9 +51,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     if (token) {
-      try {
-        localStorage.setItem('token', token);
-      } catch (_) {}
+      useAuthStore.getState().setAuth(null, token);
       const cleanUrl = window.location.pathname + window.location.hash;
       window.history.replaceState({}, document.title, cleanUrl);
     }
