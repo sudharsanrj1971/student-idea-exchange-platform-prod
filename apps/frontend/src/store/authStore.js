@@ -7,116 +7,75 @@ export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      _isLoggingOut: false,
+      accessToken: null,
       _isChecking: true,
+      _isLoggingOut: false,
 
       setAuth: (user, token) => {
-        if (token) {
-          try { localStorage.setItem('token', token); } catch (_) {}
+        set({ user, accessToken: token, _isChecking: false });
+      },
+
+      checkAuth: async () => {
+        const token = get().accessToken;
+        if (!token) {
+          set({ user: null, _isChecking: false });
+          return null;
         }
-        set({ user, accessToken: token});
+        try {
+          const { data } = await api.get('/api/auth/status');
+          if (data?.user) {
+            set({ user: data.user, accessToken: token, _isChecking: false });
+            return data.user;
+          } else {
+            set({ user: null, accessToken: null, _isChecking: false });
+            return null;
+          }
+        } catch (err) {
+          set({ user: null, accessToken: null, _isChecking: false });
+          return null;
+        }
       },
 
       logout: async () => {
         if (get()._isLoggingOut) return;
         set({ _isLoggingOut: true });
-        
         try {
           await api.post('/api/auth/logout', {}, { timeout: 3000 });
-        } catch (err) {
-          console.warn('[Auth] Logout API call failed or timed out:', err.message);
-        } finally {
+        } catch (_) {}
+        finally {
           socketService.disconnect();
-          set({ user: null, _isLoggingOut: false });
-          try {
-            localStorage.removeItem('ichange-auth');
-            localStorage.removeItem('token');
-          } catch (_) {}
+          set({ user: null, accessToken: null, _isChecking: false, _isLoggingOut: false });
+          try { localStorage.removeItem('ichange-auth'); } catch (_) {}
         }
-      },
-
-      checkAuth: async () => {
-        const stored = localStorage.getItem('ichange-auth');
-        const token = get().accessToken || (stored ? JSON.parse(stored)?.state?.accessToken : null);
-        if (!token) {
-          set({ user: null, _isChecking: false });
-          return null;
-        }
-
-        set({ _isChecking: true });
-        try {
-          const { data } = await api.get('/api/auth/status', {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          if (data.user) {
-            set({ user: data.user, _isChecking: false });
-            return data.user;
-          }
-        } catch (err) {
-          console.error('[Auth] checkAuth failed:', err.message);
-          set({ user: null, _isChecking: false });
-          try {
-            localStorage.removeItem('token');
-            localStorage.removeItem('ichange-auth');
-          } catch (_) {}
-        } finally {
-          set({ _isChecking: false });
-        }
-        return null;
       },
 
       updateUser: (updates) =>
-        set((state) => {
-          const newUser = { ...state.user, ...updates };
-          if (updates.profilePic && !updates.avatar) newUser.avatar = updates.profilePic;
-          if (updates.avatar && !updates.profilePic) newUser.profilePic = updates.avatar;
-          return { user: newUser };
-        }),
+        set((state) => ({
+          user: { ...state.user, ...updates }
+        })),
 
       refreshProfile: async () => {
         try {
           const { data } = await api.get('/api/user/profile');
           if (data) {
-            // Standardizing on 'profilePic' as the primary field for the UI
             const profilePic = data.profile_image || data.profilePic || null;
-            console.log('[Auth] refreshProfile synced profilePic:', profilePic);
-            set((state) => ({ 
-              user: { 
-                ...state.user, 
-                profilePic,
-                avatar: profilePic, // Alias for compatibility
-                image_source: data.image_source 
-              } 
+            set((state) => ({
+              user: { ...state.user, profilePic, avatar: profilePic }
             }));
           }
-        } catch (err) {
-          if (err.response?.status !== 404) {
-            console.error('Failed to refresh profile', err.message);
-          }
-        }
+        } catch (_) {}
       },
-      
+
       uploadAvatar: async (file) => {
         const formData = new FormData();
         formData.append('image', file);
-        try {
-          const { data } = await api.post('/api/user/profile/image', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          set((state) => ({ 
-            user: { 
-              ...state.user, 
-              profilePic: data.profile_image, 
-              avatar: data.profile_image, // Alias for compatibility
-              image_source: data.image_source 
-            } 
-          }));
-          return data;
-        } catch (err) {
-          throw err;
-        }
+        const { data } = await api.post('/api/user/profile/image', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        set((state) => ({
+          user: { ...state.user, profilePic: data.profile_image, avatar: data.profile_image }
+        }));
+        return data;
       }
     }),
     {
