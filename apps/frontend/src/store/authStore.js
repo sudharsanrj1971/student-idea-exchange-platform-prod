@@ -79,7 +79,7 @@ export const useAuthStore = create(
           const { data } = await api.get('/api/user/profile');
           if (data) {
             // Standardizing on 'profilePic' as the primary field for the UI
-            const profilePic = data.profile_image || null;
+            const profilePic = data.profile_image || data.profilePic || null;
             console.log('[Auth] refreshProfile synced profilePic:', profilePic);
             set((state) => ({ 
               user: { 
