@@ -20,7 +20,7 @@ const router = Router();
 const setRefreshTokenCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' ? true : false,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (sync with JWT_REFRESH_EXPIRES_IN)
     path: '/api/auth' // Scoped to /api/auth so logout can also clear it
