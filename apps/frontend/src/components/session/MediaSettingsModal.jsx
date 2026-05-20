@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Camera, Mic, Check, Volume2, Play, MonitorUp } from 'lucide-react';
+import { buildMediaConstraints } from '../../services/mediaDevices.js';
 
 export default function MediaSettingsModal({ isOpen, onClose, selectedVideoId, selectedAudioId, selectedSpeakerId, dataSaver, onDeviceChange, onToggleDataSaver }) {
   const [devices, setDevices] = useState([]);
@@ -67,10 +68,19 @@ export default function MediaSettingsModal({ isOpen, onClose, selectedVideoId, s
     stopPreview(); // always clear previous streams first
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: videoId ? { deviceId: { exact: videoId } } : true,
-        audio: audioId ? { deviceId: { exact: audioId } } : true,
-      });
+      const constraints = await buildMediaConstraints(videoId, audioId);
+      
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (err) {
+        if (err.name === 'OverconstrainedError') {
+          console.warn('OverconstrainedError during preview. Retrying with basic constraints...');
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        } else {
+          throw err;
+        }
+      }
 
       if (!mountedRef.current || !isOpen) {
         stream.getTracks().forEach(t => t.stop());

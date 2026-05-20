@@ -129,6 +129,8 @@ export default function SessionPage() {
     };
   }, [sessionId]);
 
+  const hasRetriedRef = useRef(false);
+
   const fetchSessionForLobby = async () => {
     try {
       const { data } = await api.get(`/api/sessions/${sessionId}`);
@@ -137,8 +139,18 @@ export default function SessionPage() {
       setLoading(false);
     } catch (err) {
       console.error('Session load error:', err);
-      toast.error('Failed to load session');
-      navigate('/dashboard');
+      if (!hasRetriedRef.current) {
+        hasRetriedRef.current = true;
+        console.log('Session load failed. Retrying in 2 seconds...');
+        setTimeout(() => {
+          if (mountedRef.current) {
+            fetchSessionForLobby();
+          }
+        }, 2000);
+      } else {
+        toast.error('Failed to load session. Please check your connection.');
+        navigate('/dashboard');
+      }
     }
   };
 
@@ -606,6 +618,11 @@ export default function SessionPage() {
         }
         toast('Screen sharing stopped');
       } else {
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile) {
+          toast.error("Screen sharing is not supported on mobile devices");
+          return;
+        }
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const producers = await webrtcService.produceStream(screenStream, { screen: true });
         
@@ -661,6 +678,12 @@ export default function SessionPage() {
         mediaRecorderRef.current.stop();
         setIsRecording(false);
       }
+      return;
+    }
+
+    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      toast.error("Screen recording is not supported on mobile devices");
       return;
     }
 

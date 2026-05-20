@@ -120,12 +120,26 @@ export async function getPreferredSpeakerId() {
 export async function buildMediaConstraints(selectedVideoId, selectedAudioId) {
   const videoId = selectedVideoId || await getPreferredCameraId();
 
-  return {
-    video: videoId
-      ? { deviceId: { exact: videoId }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      : { width: { ideal: 1280 }, height: { ideal: 720 } },
-    audio: selectedAudioId
-      ? { deviceId: { exact: selectedAudioId }, echoCancellation: true, noiseSuppression: true }
-      : { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  const constraints = {
+    video: {
+      facingMode: 'user',
+      width: { ideal: 640, max: 1280 },
+      height: { ideal: 480, max: 720 },
+      frameRate: { ideal: 15, max: 30 }
+    },
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true
+    }
   };
+
+  if (videoId) {
+    constraints.video.deviceId = { exact: videoId };
+  }
+  if (selectedAudioId) {
+    constraints.audio.deviceId = { exact: selectedAudioId };
+  }
+
+  return constraints;
 }

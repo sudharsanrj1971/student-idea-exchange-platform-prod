@@ -1,5 +1,6 @@
 import * as mediasoupClient from 'mediasoup-client';
 import { socketService } from './socket.js';
+import { toast } from 'react-hot-toast';
 
 class WebRTCService {
   constructor() {
@@ -34,7 +35,12 @@ class WebRTCService {
           }
           
           if (!this.device.loaded) {
-            await this.device.load({ routerRtpCapabilities: rtpCapabilities });
+            try {
+              await this.device.load({ routerRtpCapabilities: rtpCapabilities });
+            } catch (loadErr) {
+              toast.error('Browser not supported for video, please use Chrome');
+              throw loadErr;
+            }
           }
 
           return this.device;
@@ -74,7 +80,14 @@ class WebRTCService {
           direction: 'send',
         });
 
-        const transport = this.device.createSendTransport(params);
+        const transportOptions = {
+          ...params,
+          iceServers: params.iceServers || [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        };
+        const transport = this.device.createSendTransport(transportOptions);
         this.sendTransport = transport;
 
         transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
@@ -130,7 +143,14 @@ class WebRTCService {
           direction: 'recv',
         });
 
-        const transport = this.device.createRecvTransport(params);
+        const transportOptions = {
+          ...params,
+          iceServers: params.iceServers || [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        };
+        const transport = this.device.createRecvTransport(transportOptions);
         this.recvTransport = transport;
 
         transport.on('connect', async ({ dtlsParameters }, callback, errback) => {

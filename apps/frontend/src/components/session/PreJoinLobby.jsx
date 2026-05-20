@@ -30,7 +30,17 @@ export default function PreJoinLobby({ session, user, onJoin }) {
   const startPreview = async () => {
     try {
       const constraints = await buildMediaConstraints(undefined, undefined);
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (err) {
+        if (err.name === 'OverconstrainedError') {
+          console.warn('OverconstrainedError during startPreview. Retrying with basic constraints...');
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        } else {
+          throw err;
+        }
+      }
       if (!mountedRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
 
       streamRef.current = stream;
