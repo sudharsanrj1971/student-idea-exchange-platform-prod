@@ -8,7 +8,7 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       _isLoggingOut: false,
-      _isChecking: typeof window !== 'undefined' ? (!!localStorage.getItem('token') || window.location.search.includes('token=')) : false,
+      _isChecking: true,
 
       setAuth: (user, token) => {
         if (token) {
@@ -122,6 +122,7 @@ export const useAuthStore = create(
       name: 'ichange-auth',
       partialize: (state) => ({
         user: state.user,
+        accessToken: state.accessToken,
       }),
     }
   )
