@@ -98,6 +98,11 @@ export function sessionHandler(io, socket) {
           { _id: sessionId, 'participants.userId': user._id },
           { $set: { isActive: true, 'participants.$.socketId': socket.id } }
         );
+        const existingParticipant = session.participants.find(p => p.userId?.toString() === user._id?.toString());
+        if (existingParticipant) {
+          existingParticipant.socketId = socket.id;
+          existingParticipant.isOnline = true;
+        }
       }
 
       // Then join the Socket.IO room
