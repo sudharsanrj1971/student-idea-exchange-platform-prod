@@ -73,18 +73,43 @@ export default function VideoGrid({
           });
         }
       } else {
-        remoteStreams.forEach((s, idx) => {
-          allTiles.push({
-            id: s.producerId || `${p.socketId}-${idx}`,
-            producerId: s.producerId,
-            stream: s.stream,
-            user: { name: s.appData?.screen ? `${p.name}'s Screen` : p.name, avatar: resolvedAvatar },
-            isLocal: false,
-            hasRaisedHand: raisedHands.has(pId),
-            isScreen: !!s.appData?.screen,
-            isMuted: false, 
-            quality: consumerStats?.get(s.producerId)?.quality || 'good'
-          });
+        const screenStreams = remoteStreams.filter(s => s.appData?.screen);
+        const camMicStreams = remoteStreams.filter(s => !s.appData?.screen);
+
+        if (camMicStreams.length > 0) {
+           const combinedStream = new MediaStream();
+           let vidProducerId = null;
+           camMicStreams.forEach(s => {
+              s.stream.getTracks().forEach(t => combinedStream.addTrack(t));
+              if (s.kind === 'video') vidProducerId = s.producerId;
+              else if (!vidProducerId) vidProducerId = s.producerId;
+           });
+
+           allTiles.push({
+              id: p.socketId,
+              producerId: vidProducerId,
+              stream: combinedStream,
+              user: { name: p.name, avatar: resolvedAvatar },
+              isLocal: false,
+              hasRaisedHand: raisedHands.has(pId),
+              isScreen: false,
+              isMuted: combinedStream.getAudioTracks().length === 0,
+              quality: vidProducerId ? consumerStats?.get(vidProducerId)?.quality : 'good'
+           });
+        }
+
+        screenStreams.forEach(s => {
+           allTiles.push({
+              id: s.producerId,
+              producerId: s.producerId,
+              stream: s.stream,
+              user: { name: `${p.name}'s Screen`, avatar: resolvedAvatar },
+              isLocal: false,
+              hasRaisedHand: false,
+              isScreen: true,
+              isMuted: true,
+              quality: consumerStats?.get(s.producerId)?.quality || 'good'
+           });
         });
       }
     });
@@ -348,6 +373,7 @@ const VideoTile = memo(({
         />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+          <audio ref={videoRef} autoPlay playsInline muted={isLocal} className="hidden" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/10 via-transparent to-transparent animate-pulse duration-[4s]" />
           
           <div className={`rounded-full bg-gradient-to-b from-surface-700 to-surface-800 border-2 border-white/10 flex items-center justify-center font-black text-white relative z-10 shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/20 overflow-hidden transition-all duration-500 hover:scale-105 ${isDominant ? 'w-48 h-48' : 'w-24 h-24'}`}>

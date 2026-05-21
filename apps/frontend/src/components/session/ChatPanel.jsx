@@ -150,7 +150,7 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
               >
                 {!msg.type || msg.type !== 'system' ? (
                   <Avatar 
-                    src={msg.sender?.avatar || msg.avatar} 
+                    src={msg.sender?.profilePic || msg.sender?.avatar || msg.profilePic || msg.avatar} 
                     name={msg.senderName} 
                     size="xs" 
                     className="mt-1"
