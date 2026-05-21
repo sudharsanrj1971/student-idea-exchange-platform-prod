@@ -109,15 +109,30 @@ export function sessionHandler(io, socket) {
       } else {
         // User is already tracked by userId — update their socketId (reconnect case)
         // so leave/disconnect logic uses the fresh socket.id.
-        await Session.findByIdAndUpdate(
-          { _id: sessionId, 'participants.userId': user._id },
-          { $set: { isActive: true, 'participants.$.socketId': socket.id } }
-        );
-        const existingParticipant = session.participants.find(p => p.userId?.toString() === user._id?.toString());
-        if (existingParticipant) {
-          existingParticipant.socketId = socket.id;
-          existingParticipant.isOnline = true;
-        }
+        // We first try to remove any old entry to prevent duplicates, then push the new one.
+        await Session.findByIdAndUpdate(sessionId, {
+          $pull: { participants: { userId: user._id } }
+        });
+        await Session.findByIdAndUpdate(sessionId, {
+          $set: { isActive: true },
+          $push: {
+            participants: {
+              userId: user._id,
+              socketId: socket.id,
+              name: user.name,
+              avatar: user.profilePic || user.avatar || null,
+            }
+          }
+        });
+
+        // Update local memory
+        session.participants = session.participants.filter(p => p.userId?.toString() !== user._id?.toString());
+        session.participants.push({
+          userId: user._id,
+          socketId: socket.id,
+          name: user.name,
+          avatar: user.profilePic || user.avatar || null,
+        });
       }
 
       // Then join the Socket.IO room
