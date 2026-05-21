@@ -33,9 +33,9 @@ router.get('/', async (req, res, next) => {
   try {
     const sessions = await getSessionsForUser(req.user._id);
     const filteredSessions = sessions.filter(s => 
-      s.isActive || 
       (s.host && s.host._id && s.host._id.toString() === req.user._id.toString()) || 
-      (s.host && s.host.toString() === req.user._id.toString())
+      (s.host && s.host.toString() === req.user._id.toString()) ||
+      (s.createdBy && s.createdBy.toString() === req.user._id.toString())
     );
     res.json({ sessions: filteredSessions });
   } catch (err) {
