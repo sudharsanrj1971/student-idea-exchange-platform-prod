@@ -115,11 +115,20 @@ export async function getRouter(sessionId) {
   return routerPromise;
 }
 
-export function closeRouter(sessionId) {
+export async function closeRouter(sessionId) {
   const routerPromise = routerPromises.get(sessionId);
   if (routerPromise) {
     routerPromise.then(r => r.close());
     routerPromises.delete(sessionId);
+    
+    try {
+      await Session.findByIdAndUpdate(sessionId, { 
+        $set: { activeProducers: [], participants: [], isActive: false } 
+      });
+    } catch (err) {
+      logger.error('Failed to cleanup session DB on router close', { sessionId, error: err.message });
+    }
+
     logger.info(`Requested closure for session ${sessionId} router`);
   }
 }

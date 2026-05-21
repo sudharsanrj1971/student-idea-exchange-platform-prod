@@ -11,6 +11,21 @@ const inactivityTimers = new Map();
 const pendingUpdates = new Set(); // Set of sessionIds needing a broadcast
 let broadcastTimer = null;
 
+// Auto-cleanup inactive sessions every 30 minutes
+setInterval(async () => {
+  try {
+    const result = await Session.deleteMany({ 
+      isActive: false, 
+      updatedAt: { $lt: new Date(Date.now() - 60 * 60 * 1000) } 
+    });
+    if (result.deletedCount > 0) {
+      logger.info(`Auto-cleaned ${result.deletedCount} inactive sessions`);
+    }
+  } catch (err) {
+    logger.error('Failed to auto-cleanup inactive sessions', { error: err.message });
+  }
+}, 30 * 60 * 1000);
+
 function scheduleBroadcast(sessionId) {
   pendingUpdates.add(sessionId.toString());
   if (broadcastTimer) return;
