@@ -592,7 +592,10 @@ export default function SessionPage() {
       }
 
       // Publish to Mediasoup
-      await webrtcService.produceStream(stream, {
+      const tracksToPublish = new MediaStream();
+      stream.getAudioTracks().forEach(t => tracksToPublish.addTrack(t));
+      if (!isCamOff) stream.getVideoTracks().forEach(t => tracksToPublish.addTrack(t));
+      await webrtcService.produceStream(tracksToPublish, {
         userId: user?._id,
         name: user?.name,
         role: user?.role,
