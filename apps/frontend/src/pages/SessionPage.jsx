@@ -643,11 +643,7 @@ export default function SessionPage() {
         }
         toast('Screen sharing stopped');
       } else {
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-        if (isMobile) {
-          toast.error("Screen sharing is not supported on mobile devices");
-          return;
-        }
+
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const producers = await webrtcService.produceStream(screenStream, { screen: true });
         
@@ -706,11 +702,7 @@ export default function SessionPage() {
       return;
     }
 
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (isMobile) {
-      toast.error("Screen recording is not supported on mobile devices");
-      return;
-    }
+
 
     try {
       // Prompt for tab capture — allows recording the meeting interface itself
