@@ -97,8 +97,8 @@ export default function PreJoinLobby({ session, user, onJoin }) {
   const toggleCam = () => {
     const track = streamRef.current?.getVideoTracks()[0];
     if (track) {
-      track.enabled = isCamOff; // toggling: if currently off, turn on
-      setIsCamOff(prev => !prev);
+      track.enabled = !track.enabled;
+      setIsCamOff(!track.enabled);
     } else {
       setIsCamOff(prev => !prev);
     }
@@ -107,8 +107,8 @@ export default function PreJoinLobby({ session, user, onJoin }) {
   const toggleMic = () => {
     const track = streamRef.current?.getAudioTracks()[0];
     if (track) {
-      track.enabled = isMuted; // if currently muted, unmute
-      setIsMuted(prev => !prev);
+      track.enabled = !track.enabled;
+      setIsMuted(!track.enabled);
     } else {
       setIsMuted(prev => !prev);
     }
