@@ -271,7 +271,7 @@ export default function PreJoinLobby({ session, user, onJoin }) {
             <div className="flex items-center gap-4 py-4 border-t border-white/5">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-primary-500/20 overflow-hidden shrink-0">
                 <Avatar 
-                  src={session?.host?.avatar} 
+                  src={session?.host?.profilePic || session?.host?.avatar} 
                   name={session?.host?.name || 'Host'} 
                   size="md"
                   className="w-full h-full rounded-2xl"

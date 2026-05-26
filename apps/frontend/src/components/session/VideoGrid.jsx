@@ -77,23 +77,18 @@ export default function VideoGrid({
         const camMicStreams = remoteStreams.filter(s => !s.appData?.screen);
 
         if (camMicStreams.length > 0) {
-           const combinedStream = new MediaStream();
-           let vidProducerId = null;
-           camMicStreams.forEach(s => {
-              s.stream.getTracks().forEach(t => combinedStream.addTrack(t));
-              if (s.kind === 'video') vidProducerId = s.producerId;
-              else if (!vidProducerId) vidProducerId = s.producerId;
-           });
+           const pStream = camMicStreams[0].stream;
+           const vidProducerId = camMicStreams[0].producerId;
 
            allTiles.push({
               id: p.socketId,
               producerId: vidProducerId,
-              stream: combinedStream,
+              stream: pStream,
               user: { name: p.name, avatar: resolvedAvatar },
               isLocal: false,
               hasRaisedHand: raisedHands.has(pId),
               isScreen: false,
-              isMuted: combinedStream.getAudioTracks().length === 0,
+              isMuted: pStream.getAudioTracks().length === 0,
               quality: vidProducerId ? consumerStats?.get(vidProducerId)?.quality : 'good'
            });
         }
@@ -304,20 +299,47 @@ const VideoTile = memo(({
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !stream) return;
-    
-    // If Data Saver is ON, don't set the stream to the video element unless it's a screen share
-    if (dataSaver && !isScreen && !isLocal) {
-      if (video.srcObject) video.srcObject = null;
-      return;
-    }
 
-    // Only update if it's not already the same stream to prevent flickering
+    if (!video || !stream) return;
+
     if (video.srcObject !== stream) {
-      console.log(`[DEBUG] Updating srcObject for tile: ${id}`);
       video.srcObject = stream;
     }
-  }, [stream, id, dataSaver, isScreen, isLocal]);
+
+    const startPlayback = async () => {
+      try {
+        video.muted = true;
+
+        await video.play();
+
+        if (video.readyState < 2) {
+          await new Promise(resolve => {
+            video.onloadeddata = () => resolve();
+          });
+        }
+
+        video.muted = isLocal || isScreen;
+
+        console.log('[VIDEO DEBUG]', {
+          readyState: video.readyState,
+          paused: video.paused,
+          currentTime: video.currentTime,
+          tracks: stream.getTracks().map(t => ({
+            kind: t.kind,
+            enabled: t.enabled,
+            muted: t.muted,
+            readyState: t.readyState
+          }))
+        });
+
+      } catch (err) {
+        console.warn('[VIDEO PLAY ERROR]', err);
+      }
+    };
+
+    startPlayback();
+
+  }, [stream, isLocal, isScreen]);
 
   useEffect(() => {
     // WebRTC remote audio routing
@@ -368,6 +390,7 @@ const VideoTile = memo(({
           ref={videoRef}
           autoPlay
           playsInline
+          webkit-playsinline="true"
           muted={isLocal}
           className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
         />

@@ -11,6 +11,7 @@ class WebRTCService {
     this.consumers = new Map(); // consumerId → consumer
     this.producerToConsumerMap = new Map(); // producerId → consumerId
     this.sessionId = null;
+    this.consumePromises = new Map();
   }
 
   async init(sessionId) {
@@ -240,14 +241,20 @@ class WebRTCService {
 
 
   async consumeProducer(producerId) {
-    if (!this.recvTransport) await this.createRecvTransport();
-
-    // Check if we already have a consumer for this producer
-    const existingConsumerId = this.producerToConsumerMap.get(producerId);
-    if (existingConsumerId) {
-      const existing = this.consumers.get(existingConsumerId);
-      if (existing && !existing.closed) return existing;
+    // Prevent concurrent consumes for the same producer
+    if (this.consumePromises.has(producerId)) {
+      return this.consumePromises.get(producerId);
     }
+
+    const consumeTask = async () => {
+      if (!this.recvTransport) await this.createRecvTransport();
+
+      // Check if we already have a consumer for this producer
+      const existingConsumerId = this.producerToConsumerMap.get(producerId);
+      if (existingConsumerId) {
+        const existing = this.consumers.get(existingConsumerId);
+        if (existing && !existing.closed) return existing;
+      }
 
     const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
       sessionId: this.sessionId,
@@ -271,11 +278,21 @@ class WebRTCService {
       this.producerToConsumerMap.delete(producerId);
     });
 
-    // Resume consumer
-    await this._request('media:resumeConsumer', { consumerId });
-    consumer.resume();
+      // Resume consumer
+      await this._request('media:resumeConsumer', { consumerId });
+      consumer.resume();
 
-    return consumer;
+      return consumer;
+    };
+
+    const promise = consumeTask();
+    this.consumePromises.set(producerId, promise);
+    
+    try {
+      return await promise;
+    } finally {
+      this.consumePromises.delete(producerId);
+    }
   }
 
   async pauseConsumer(consumerId) {
@@ -325,6 +342,7 @@ class WebRTCService {
     this.sendTransport = null;
     this.recvTransport = null;
     this.sessionId = null; // BUG FIX: reset so re-joining same session re-inits device
+    this.consumePromises.clear();
     this.initPromise = null;
     this.sendTransportPromise = null;
     this.recvTransportPromise = null;

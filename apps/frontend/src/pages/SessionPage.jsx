@@ -66,6 +66,7 @@ export default function SessionPage() {
   const speechRecoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
+  const remoteStreamsRef = useRef(new Map());
 
   useEffect(() => {
     if (!sessionStartTime) return;
@@ -496,14 +497,41 @@ export default function SessionPage() {
 
     try {
       const consumer = await webrtcService.consumeProducer(producerId);
-      const track = consumer.track;
-      const stream = new MediaStream([track]);
       
+      if (!remoteStreamsRef.current.has(socketId)) {
+        remoteStreamsRef.current.set(socketId, {
+          stream: new MediaStream(),
+          tracks: {}
+        });
+      }
+
+      const entry = remoteStreamsRef.current.get(socketId);
+
+      consumer.track.enabled = true;
+
+      const existingTrack = entry.stream
+        .getTracks()
+        .find(t => t.kind === consumer.track.kind);
+
+      if (existingTrack) {
+        entry.stream.removeTrack(existingTrack);
+        existingTrack.stop();
+      }
+
+      entry.stream.addTrack(consumer.track);
+
+      entry.tracks[consumer.track.kind] = consumer.track;
+
       setRemoteStreams(prev => {
-        if (prev.has(producerId)) return prev; // Final check
-        const newMap = new Map(prev);
-        newMap.set(producerId, { producerId, stream, socketId, kind, appData });
-        return newMap;
+        const next = new Map(prev);
+
+        next.set(socketId, {
+          ...next.get(socketId),
+          stream: entry.stream,
+          kind: consumer.track.kind
+        });
+
+        return next;
       });
 
       // Confirm the consumer is resumed on the server
@@ -635,6 +663,11 @@ export default function SessionPage() {
 
   const toggleScreenShare = async () => {
     try {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        toast.error('Screen sharing is not supported on mobile');
+        return;
+      }
       if (isScreenSharing) {
         setIsScreenSharing(false);
         setLocalScreenStream(null);
@@ -697,6 +730,11 @@ export default function SessionPage() {
   }, []);
 
   const handleToggleRecording = async () => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      toast.error('Recording is not supported on mobile');
+      return;
+    }
     if (isRecording) {
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stop();
