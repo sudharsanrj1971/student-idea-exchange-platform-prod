@@ -488,7 +488,7 @@ export default function SessionPage() {
   }, []);
 
 
-  const handleNewProducer = async ({ producerId, socketId, userId, kind, appData }) => {
+  const handleNewProducer = async ({ producerId, socketId, userId, name, kind, appData }) => {
     if (!webrtcService.device?.loaded) {
       setTimeout(() => handleNewProducer({ producerId, socketId, kind, appData }), 1000);
       return;
@@ -534,6 +534,7 @@ export default function SessionPage() {
           socketId: socketId,
           userId: userId?.toString() || socketId,
           appData,
+          name: name,
         });
 
         return next;
