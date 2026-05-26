@@ -490,7 +490,7 @@ export default function SessionPage() {
 
   const handleNewProducer = async ({ producerId, socketId, userId, name, kind, appData }) => {
     if (!webrtcService.device?.loaded) {
-      setTimeout(() => handleNewProducer({ producerId, socketId, kind, appData }), 1000);
+      setTimeout(() => handleNewProducer({ producerId, socketId, userId, name, kind, appData }), 1000);
       return;
     }
     if (socketId === socketRef.current?.id) return;
