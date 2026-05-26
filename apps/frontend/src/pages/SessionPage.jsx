@@ -67,6 +67,7 @@ export default function SessionPage() {
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
   const remoteStreamsRef = useRef(new Map());
+  const consumingRef = useRef(new Set());
 
   useEffect(() => {
     if (!sessionStartTime) return;
@@ -493,7 +494,8 @@ export default function SessionPage() {
       return;
     }
     if (socketId === socketRef.current?.id) return;
-    if (remoteStreams.has(producerId)) return; // Already consuming
+    if (consumingRef.current.has(producerId)) return; // Already consuming
+    consumingRef.current.add(producerId);
 
     try {
       const consumer = await webrtcService.consumeProducer(producerId);
