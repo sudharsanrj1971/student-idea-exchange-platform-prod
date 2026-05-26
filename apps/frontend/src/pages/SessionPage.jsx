@@ -528,7 +528,10 @@ export default function SessionPage() {
         next.set(socketId, {
           ...next.get(socketId),
           stream: entry.stream,
-          kind: consumer.track.kind
+          kind: consumer.track.kind,
+          socketId: socketId,
+          userId: userId?.toString() || socketId,
+          appData,
         });
 
         return next;
