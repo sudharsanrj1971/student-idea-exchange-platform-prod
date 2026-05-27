@@ -257,23 +257,18 @@ class WebRTCService {
         if (existing && !existing.closed) return existing;
       }
 
-    const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
-      sessionId: this.sessionId,
-      transportId: this.recvTransport.id,
-      producerId,
-      rtpCapabilities: this.device.rtpCapabilities,
+    const consumer = await new Promise((resolve, reject) => {
+      const task = async () => {
+        const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
+          sessionId: this.sessionId,
+          transportId: this.recvTransport.id,
+          producerId,
+          rtpCapabilities: this.device.rtpCapabilities,
+        });
+        return this.recvTransport.consume({ id: consumerId, producerId, kind, rtpParameters });
+      };
+      this.consumeQueue = this.consumeQueue.then(task, task).then(resolve, reject);
     });
-
-    const consumer = await (() => {
-      const task = () => this.recvTransport.consume({
-        id: consumerId,
-        producerId,
-        kind,
-        rtpParameters,
-      });
-      this.consumeQueue = this.consumeQueue.then(task, task);
-      return this.consumeQueue;
-    })();
 
     this.consumers.set(consumer.id, consumer);
     this.producerToConsumerMap.set(producerId, consumer.id);
