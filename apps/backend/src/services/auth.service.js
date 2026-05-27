@@ -46,12 +46,12 @@ const syncUserProfile = async (user) => {
   let profile = await UserProfile.findOne({ userId: user._id });
   
   if (!profile) {
-    // First time — create profile record
-    profile = new UserProfile({
-      userId: user._id,
-      email: user.email,
-      profilePic: user.profilePic || ''
-    });
+    // Use findOneAndUpdate with upsert to avoid duplicate key on concurrent logins
+    profile = await UserProfile.findOneAndUpdate(
+      { email: user.email },
+      { $setOnInsert: { userId: user._id, email: user.email, profilePic: user.profilePic || '' } },
+      { upsert: true, new: true }
+    );
   }
 
   // If Google OAuth data exists on user — use that pic (highest priority)
