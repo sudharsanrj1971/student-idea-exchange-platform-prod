@@ -202,7 +202,13 @@ export function mediaHandler(io, socket) {
           try {
             await sourceRouter.pipeToRouter({ producerId, router });
             // Retry canConsume after piping
-            if (!router.canConsume({ producerId, rtpCapabilities })) {
+            // Retry once — producer may still be initializing
+        let canConsume = router.canConsume({ producerId, rtpCapabilities });
+        if (!canConsume) {
+          await new Promise(r => setTimeout(r, 600));
+          canConsume = router.canConsume({ producerId, rtpCapabilities });
+        }
+        if (!canConsume) {
               return mediaError(socket, 'media:consumed', 'Cannot consume this producer even after piping');
             }
           } catch (pipeErr) {
