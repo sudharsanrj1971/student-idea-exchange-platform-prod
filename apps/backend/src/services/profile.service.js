@@ -145,7 +145,10 @@ export async function syncGoogleProfile(userId, googleImageUrl) {
  * Initialize profile for a brand-new user.
  */
 export async function initializeProfile(userId, email) {
-  const profile = new UserProfile({ userId, email });
-  await profile.save(); // pre-save hook handles initial pic
+  await UserProfile.findOneAndUpdate(
+    { email },
+    { $setOnInsert: { userId, email } },
+    { upsert: true, new: true }
+  );
   return resolveProfileIdentity(userId, true);
 }
