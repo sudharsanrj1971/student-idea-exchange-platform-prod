@@ -210,6 +210,16 @@ export function mediaHandler(io, socket) {
             return mediaError(socket, 'media:consumed', 'Failed to pipe producer across workers');
           }
         } else {
+          // Producer is in same session but router can't consume it — stale DB entry
+          // Clean it up so it doesn't block future joins
+          try {
+            await Session.findByIdAndUpdate(sessionId, {
+              $pull: { activeProducers: { producerId } }
+            });
+            logger.warn('Removed stale producer from DB', { producerId, sessionId });
+          } catch (cleanErr) {
+            logger.error('Failed to clean stale producer', { error: cleanErr.message });
+          }
           return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
         }
       }

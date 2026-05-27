@@ -560,6 +560,8 @@ export default function SessionPage() {
       }
     } catch (err) {
       console.error('Consume error:', err);
+      // Remove from guard so a future new-producer event can retry
+      consumingRef.current.delete(producerId);
     }
   };
 
