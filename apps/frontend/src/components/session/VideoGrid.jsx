@@ -275,6 +275,7 @@ const VideoTile = memo(({
   quality
 }) => {
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
   const containerRef = useRef(null);
   const isSpeaking = useActiveSpeaker(stream);
   const [isTileFullScreen, setIsTileFullScreen] = useState(false);
@@ -305,6 +306,7 @@ const VideoTile = memo(({
 
     if (video.srcObject !== stream) {
       video.srcObject = stream;
+      video.muted = true; // always start muted for autoplay policy
     }
 
     const startPlayback = async () => {
@@ -312,6 +314,7 @@ const VideoTile = memo(({
         video.muted = true;
 
         await video.play();
+        video.muted = isLocal || isScreen; // unmute local, keep remote muted until gesture
 
         if (video.readyState < 2) {
           await new Promise(resolve => {
@@ -397,7 +400,7 @@ const VideoTile = memo(({
         />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
-          <audio ref={videoRef} autoPlay playsInline muted={isLocal} className="hidden" />
+          <audio ref={audioRef} autoPlay playsInline muted={isLocal} className="hidden" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/10 via-transparent to-transparent animate-pulse duration-[4s]" />
           
           <div className={`rounded-full bg-gradient-to-b from-surface-700 to-surface-800 border-2 border-white/10 flex items-center justify-center font-black text-white relative z-10 shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/20 overflow-hidden transition-all duration-500 hover:scale-105 ${isDominant ? 'w-48 h-48' : 'w-24 h-24'}`}>
