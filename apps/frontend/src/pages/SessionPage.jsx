@@ -317,12 +317,26 @@ export default function SessionPage() {
     });
 
     socket.on('media:producerClosed', ({ producerId }) => {
+      // Map is keyed by socketId — find the entry that owns this producerId
       setRemoteStreams((prev) => {
-        if (!prev.has(producerId)) return prev;
         const newMap = new Map(prev);
-        newMap.delete(producerId);
+        let deletedKey = null;
+        for (const [key, val] of newMap) {
+          if (val.producerIds && val.producerIds.has(producerId)) {
+            val.producerIds.delete(producerId);
+            if (val.producerIds.size === 0) {
+              deletedKey = key;
+            }
+          }
+        }
+        if (deletedKey) {
+          newMap.delete(deletedKey);
+          // Also clean remoteStreamsRef
+          remoteStreamsRef.current.delete(deletedKey);
+        }
         return newMap;
       });
+      consumingRef.current.delete(producerId);
       setPinnedId((prev) => (prev === producerId ? null : prev));
     });
 
@@ -356,6 +370,8 @@ export default function SessionPage() {
         console.log('[WebRTC] Reconnecting/rejoining: cleaning up old session media');
         webrtcService.closeAll();
         setRemoteStreams(new Map());
+        remoteStreamsRef.current = new Map();
+        consumingRef.current = new Set();
       }
 
       // Emit session:join with an acknowledgment callback.
@@ -527,15 +543,10 @@ export default function SessionPage() {
       setRemoteStreams(prev => {
         const next = new Map(prev);
 
-        next.set(socketId, {
-          ...next.get(socketId),
-          stream: entry.stream,
-          kind: consumer.track.kind,
-          socketId: socketId,
-          userId: userId?.toString() || socketId,
-          appData,
-          name: name,
-        });
+        const existing = next.get(socketId) || {};
+        const producerIds = existing.producerIds || new Set();
+        producerIds.add(producerId);
+        next.set(socketId, { ...existing, stream: entry.stream, kind: consumer.track.kind, socketId, userId: userId?.toString() || socketId, appData, name, producerIds });
 
         return next;
       });

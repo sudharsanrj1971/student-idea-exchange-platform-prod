@@ -62,13 +62,13 @@ export default function VideoGrid({
 
       if (remoteStreams.length === 0) {
         if (!hideNonVideo) {
-          // Camera-off tile: only the avatar is shown — this is the most common case
-          // for users with camera disabled.
           allTiles.push({
             id: p.socketId,
             stream: null,
             user: { name: p.name, avatar: resolvedAvatar },
             isLocal: false,
+            isCamOff: true,
+            isMuted: true,
             hasRaisedHand: raisedHands.has(pId),
           });
         }
@@ -89,6 +89,7 @@ export default function VideoGrid({
               hasRaisedHand: raisedHands.has(pId),
               isScreen: false,
               isMuted: pStream.getAudioTracks().length === 0,
+              isCamOff: pStream.getVideoTracks().length === 0,
               quality: vidProducerId ? consumerStats?.get(vidProducerId)?.quality : 'good'
            });
         }
@@ -385,7 +386,7 @@ const VideoTile = memo(({
       className={`video-tile group relative w-full h-full rounded-[2.5rem] overflow-hidden bg-surface-900 ring-1 ring-white/10 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${isTileFullScreen ? 'rounded-none' : ''} ${pinnedRing} ${activeRing}`} 
       id={`video-tile-${id}`}
     >
-      {hasVideo && !isCamOff ? (
+      {hasVideo ? (
         <video
           ref={videoRef}
           autoPlay
