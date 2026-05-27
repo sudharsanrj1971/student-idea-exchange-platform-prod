@@ -12,6 +12,7 @@ class WebRTCService {
     this.producerToConsumerMap = new Map(); // producerId → consumerId
     this.sessionId = null;
     this.consumePromises = new Map();
+    this.consumeQueue = Promise.resolve(); // serialize recvTransport.consume() calls
   }
 
   async init(sessionId) {
@@ -263,12 +264,16 @@ class WebRTCService {
       rtpCapabilities: this.device.rtpCapabilities,
     });
 
-    const consumer = await this.recvTransport.consume({
-      id: consumerId,
-      producerId,
-      kind,
-      rtpParameters,
-    });
+    const consumer = await (() => {
+      const task = () => this.recvTransport.consume({
+        id: consumerId,
+        producerId,
+        kind,
+        rtpParameters,
+      });
+      this.consumeQueue = this.consumeQueue.then(task, task);
+      return this.consumeQueue;
+    })();
 
     this.consumers.set(consumer.id, consumer);
     this.producerToConsumerMap.set(producerId, consumer.id);
