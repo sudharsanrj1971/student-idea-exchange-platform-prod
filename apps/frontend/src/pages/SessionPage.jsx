@@ -537,6 +537,8 @@ export default function SessionPage() {
       }
 
       entry.stream.addTrack(consumer.track);
+      const freshStream = new MediaStream(entry.stream.getTracks());
+      entry.stream = freshStream;
 
       entry.tracks[consumer.track.kind] = consumer.track;
 
@@ -546,7 +548,7 @@ export default function SessionPage() {
         const existing = next.get(socketId) || {};
         const producerIds = existing.producerIds || new Set();
         producerIds.add(producerId);
-        next.set(socketId, { ...existing, stream: entry.stream, kind: consumer.track.kind, socketId, userId: userId?.toString() || socketId, appData, name, producerIds });
+        next.set(socketId, { ...existing, stream: freshStream, kind: consumer.track.kind, socketId, userId: userId?.toString() || socketId, appData, name, producerIds });
 
         return next;
       });
