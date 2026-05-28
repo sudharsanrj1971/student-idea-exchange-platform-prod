@@ -374,6 +374,7 @@ class WebRTCService {
     this.recvTransport = null;
     this.sessionId = null; // BUG FIX: reset so re-joining same session re-inits device
     this.consumePromises.clear();
+    this.consumeQueue = Promise.resolve();
     this.initPromise = null;
     this.sendTransportPromise = null;
     this.recvTransportPromise = null;
