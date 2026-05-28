@@ -12,6 +12,8 @@ class WebRTCService {
     this.producerToConsumerMap = new Map(); // producerId → consumerId
     this.sessionId = null;
     this.consumePromises = new Map();
+    this._requestQueues = {};
+    this._requestQueues = {};
     this.consumeQueue = Promise.resolve(); // serialize recvTransport.consume() calls
   }
 
@@ -397,7 +399,7 @@ class WebRTCService {
         reject(new Error(`Timeout: ${event}`));
       }, 15000);
 
-      socket.on(responseEvent, onResponse);
+      socket.once(responseEvent, onResponse);
       socket.emit(event, data);
     });
   }

@@ -217,17 +217,27 @@ export function mediaHandler(io, socket) {
             return mediaError(socket, 'media:consumed', 'Failed to pipe producer across workers');
           }
         } else {
-          // Producer is in same session but router can't consume it — stale DB entry
-          // Clean it up so it doesn't block future joins
-          try {
-            await Session.findByIdAndUpdate(sessionId, {
-              $pull: { activeProducers: { producerId } }
-            });
-            logger.warn('Removed stale producer from DB', { producerId, sessionId });
-          } catch (cleanErr) {
-            logger.error('Failed to clean stale producer', { error: cleanErr.message });
+          // Producer is in same session — retry before assuming stale
+          await new Promise(r => setTimeout(r, 800));
+          const retryCanConsume = router.canConsume({ producerId, rtpCapabilities });
+          if (!retryCanConsume) {
+            // Check if producer actually exists in mediasoup (not just DB)
+            const producerExists = Object.values(socket.producers || {}).some(p => p.id === producerId) ||
+              Array.from(router._producers?.values() || []).some(p => p.id === producerId);
+            if (!producerExists) {
+              try {
+                await Session.findByIdAndUpdate(sessionId, {
+                  $pull: { activeProducers: { producerId } }
+                });
+                logger.warn('Removed stale producer from DB', { producerId, sessionId });
+              } catch (cleanErr) {
+                logger.error('Failed to clean stale producer', { error: cleanErr.message });
+              }
+            } else {
+              logger.warn('Producer exists but canConsume=false — codec mismatch?', { producerId });
+            }
+            return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
           }
-          return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
         }
       }
 
