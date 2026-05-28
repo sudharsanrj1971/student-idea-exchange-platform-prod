@@ -15,6 +15,7 @@ export async function connectRedis() {
       connectTimeout: 2000,      // 2s connection timeout in dev to avoid hung startup
       keepAlive: 5000,           // TCP keepalive every 5s — detect dead connections fast
       noDelay: true,             // Disable Nagle algorithm for low-latency pub/sub
+      pingInterval: 60000,       // Ping every 60s — prevent 6-hour idle disconnects
       tls: isTLS,                // Support TLS for Upstash/Production
       rejectUnauthorized: false,  // Often required for managed Redis like Upstash
       reconnectStrategy: (retries) => {

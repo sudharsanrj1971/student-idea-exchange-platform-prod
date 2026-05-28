@@ -397,7 +397,7 @@ class WebRTCService {
         reject(new Error(`Timeout: ${event}`));
       }, 15000);
 
-      socket.once(responseEvent, onResponse);
+      socket.on(responseEvent, onResponse);
       socket.emit(event, data);
     });
   }

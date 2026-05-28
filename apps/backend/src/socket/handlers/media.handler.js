@@ -127,6 +127,7 @@ export function mediaHandler(io, socket) {
         }
       });
 
+      logger.info(`[media] produce OK: ${producer.id} kind=${kind} user=${socket.user.name} session=${sessionId}`);
       socket.to(sessionId).emit('media:newProducer', {
         producerId: producer.id,
         socketId: socket.id,
@@ -230,7 +231,12 @@ export function mediaHandler(io, socket) {
         }
       }
 
-      const consumer = await transport.consume({ producerId, rtpCapabilities, paused: true });
+      const consumer = await transport.consume({
+        producerId,
+        rtpCapabilities,
+        paused: true,
+        appData: { streamId: producerId },
+      });
 
       if (!socket.consumers) socket.consumers = {};
       socket.consumers[consumer.id] = consumer;

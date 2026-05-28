@@ -33,17 +33,24 @@ export async function resolveProfileIdentity(userId, skipCache = false) {
   if (!user) return null;
 
   // 3. Upsert UserProfile
-  let profile = await UserProfile.findOneAndUpdate(
-    { userId: userId },
-    {
-      $setOnInsert: {
-        email: user.email,
-        profilePic: '',
-        googleId: user.auth_provider === 'google' ? user.provider_id : null,
+  let profile;
+  try {
+    profile = await UserProfile.findOneAndUpdate(
+      { userId: userId },
+      {
+        $setOnInsert: {
+          email: user.email,
+          profilePic: '',
+          googleId: user.auth_provider === 'google' ? user.provider_id : null,
+        },
       },
-    },
-    { upsert: true, new: true, runValidators: true }
-  );
+      { upsert: true, new: true, runValidators: true }
+    );
+  } catch (e) {
+    if (e.code === 11000) {
+      profile = await UserProfile.findOne({ userId: userId }) || await UserProfile.findOne({ email: user.email });
+    } else throw e;
+  }
 
   // 4. Resolve priority
   let resolvedUrl = null;
