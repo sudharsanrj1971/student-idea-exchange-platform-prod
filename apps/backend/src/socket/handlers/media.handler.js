@@ -180,7 +180,7 @@ export function mediaHandler(io, socket) {
   });
 
   // ── media:consume ──────────────────────────────────────
-  socket.on('media:consume', async ({ sessionId, transportId, producerId, rtpCapabilities }) => {
+  socket.on('media:consume', async ({ sessionId, transportId, producerId, rtpCapabilities, _reqId }) => {
     try {
       if (!await isAuthorized(socket, sessionId))
         return mediaError(socket, 'media:consumed', 'Not authorized for this session');
@@ -256,6 +256,7 @@ export function mediaHandler(io, socket) {
         producerId,
         kind: consumer.kind,
         rtpParameters: consumer.rtpParameters,
+        _reqId,
       });
     } catch (err) {
       logger.error('media:consume error', { error: err.message });

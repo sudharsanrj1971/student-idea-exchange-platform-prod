@@ -383,7 +383,9 @@ class WebRTCService {
       const responseEvent = responseMap[event];
       if (!responseEvent) return reject(new Error(`Unknown event: ${event}`));
 
+      const reqId = Math.random().toString(36).slice(2);
       const onResponse = (res) => {
+        if (res?._reqId && res._reqId !== reqId) return; // not our response
         cleanup();
         if (res?.error) reject(new Error(res.error));
         else resolve(res);
@@ -400,7 +402,7 @@ class WebRTCService {
       }, 15000);
 
       socket.once(responseEvent, onResponse);
-      socket.emit(event, data);
+      socket.emit(event, { ...data, _reqId: reqId });
     });
   }
 }
