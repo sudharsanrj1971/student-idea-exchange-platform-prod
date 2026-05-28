@@ -257,31 +257,31 @@ class WebRTCService {
         if (existing && !existing.closed) return existing;
       }
 
-    const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
-      sessionId: this.sessionId,
-      transportId: this.recvTransport.id,
-      producerId,
-      rtpCapabilities: this.device.rtpCapabilities,
-    });
-    const consumer = await new Promise((resolve, reject) => {
-      const task = () => this.recvTransport.consume({ id: consumerId, producerId, kind, rtpParameters });
-      this.consumeQueue = this.consumeQueue.then(task, task).then(resolve, reject);
-    });
+      const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
+        sessionId: this.sessionId,
+        transportId: this.recvTransport.id,
+        producerId,
+        rtpCapabilities: this.device.rtpCapabilities,
+      });
+      const consumer = await new Promise((resolve, reject) => {
+        const task = () => this.recvTransport.consume({ id: consumerId, producerId, kind, rtpParameters });
+        this.consumeQueue = this.consumeQueue.then(task, task).then(resolve, reject);
+      });
 
-    this.consumers.set(consumer.id, consumer);
-    this.producerToConsumerMap.set(producerId, consumer.id);
+      this.consumers.set(consumer.id, consumer);
+      this.producerToConsumerMap.set(producerId, consumer.id);
 
-    consumer.on('transportclose', () => {
-      this.consumers.delete(consumer.id);
-      this.producerToConsumerMap.delete(producerId);
-    });
+      consumer.on('transportclose', () => {
+        this.consumers.delete(consumer.id);
+        this.producerToConsumerMap.delete(producerId);
+      });
 
-      // Resume consumer
-      await this._request('media:resumeConsumer', { consumerId });
-      consumer.resume();
+        // Resume consumer
+        await this._request('media:resumeConsumer', { consumerId });
+        consumer.resume();
 
-      return consumer;
-    };
+        return consumer;
+      };
 
     const promise = consumeTask();
     this.consumePromises.set(producerId, promise);
