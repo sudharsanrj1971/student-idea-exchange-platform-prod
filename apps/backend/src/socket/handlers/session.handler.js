@@ -3,6 +3,8 @@ import { recordJoin, recordLeave } from '../../services/attendance.service.js';
 import { logger } from '../../config/logger.js';
 import { closeRouter } from '../../mediasoup/router.js';
 
+const sessionCache = new Map(); // sessionId → participants array
+
 // Inactivity tracking
 const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 const inactivityTimers = new Map();
@@ -37,17 +39,27 @@ function scheduleBroadcast(sessionId) {
 
     for (const sid of sessionIds) {
       try {
-        const session = await Session.findById(sid).lean();
-        if (session && session.isActive) {
-          // Broadcast batch update to the entire room
+        const cachedParticipants = sessionCache.get(sid);
+        if (cachedParticipants) {
           import('../../socket/index.js').then(({ io }) => {
             if (io) {
-              io.to(sid).emit('session:participants', {
-                participants: session.participants,
-                timestamp: Date.now()
-              });
+              io.to(sid).emit('session:participants', { participants: cachedParticipants, timestamp: Date.now() });
             }
           });
+        } else {
+          const session = await Session.findById(sid).lean();
+          if (session && session.isActive) {
+            sessionCache.set(sid, session.participants);
+            // Broadcast batch update to the entire room
+            import('../../socket/index.js').then(({ io }) => {
+              if (io) {
+                io.to(sid).emit('session:participants', {
+                  participants: session.participants,
+                  timestamp: Date.now()
+                });
+              }
+            });
+          }
         }
       } catch (err) {
         logger.error('Failed to broadcast throttled update', { sessionId: sid, error: err.message });
@@ -134,6 +146,8 @@ export function sessionHandler(io, socket) {
           avatar: user.profilePic || user.avatar || null,
         });
       }
+
+      sessionCache.set(sessionId.toString(), session.participants);
 
       // Then join the Socket.IO room
       await socket.join(sessionId);
@@ -383,6 +397,12 @@ async function handleLeave(io, socket, sessionId) {
 
     const remainingCount = updatedSession.participants.length;
     const updatedIsActive = remainingCount > 0;
+
+    if (updatedIsActive) {
+      sessionCache.set(sessionId.toString(), updatedSession.participants);
+    } else {
+      sessionCache.delete(sessionId.toString());
+    }
 
     // Update isActive in a fire-and-forget manner
     if (updatedSession.isActive !== updatedIsActive) {

@@ -70,6 +70,35 @@ export default function SessionPage() {
   const consumingRef = useRef(new Set());
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      const currentParticipants = useSessionStore.getState().participants;
+      let changed = false;
+      
+      const activeSocketIds = new Set(currentParticipants.map(p => p.socketId));
+      for (const [socketId] of remoteStreamsRef.current) {
+        if (!activeSocketIds.has(socketId)) {
+          remoteStreamsRef.current.delete(socketId);
+          changed = true;
+        }
+      }
+
+      const activeProducerIds = new Set();
+      webrtcService.consumers.forEach(c => activeProducerIds.add(c.producerId));
+      
+      for (const prodId of consumingRef.current) {
+        if (!activeProducerIds.has(prodId)) {
+          consumingRef.current.delete(prodId);
+        }
+      }
+
+      if (changed) {
+        setRemoteStreams(new Map(remoteStreamsRef.current));
+      }
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (!sessionStartTime) return;
     const interval = setInterval(() => {
       const diff = Math.floor((Date.now() - sessionStartTime) / 1000);
@@ -571,6 +600,14 @@ export default function SessionPage() {
     socketRef.current?.emit('session:leave', { sessionId });
     stopAllMedia();
     webrtcService.closeAll();
+    webrtcService.cleanup();
+    webrtcService.consumers.forEach(c => { try { c.close(); } catch(_){} });
+    webrtcService.consumers.clear();
+    webrtcService.producerToConsumerMap.clear();
+    webrtcService.consumePromises.clear();
+    consumingRef.current.clear();
+    webrtcService.recvTransport = null;
+    webrtcService.sendTransport = null;
     // Do NOT disconnect the global socket, so we can still receive global notices in the dashboard.
     reset();
   };

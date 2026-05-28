@@ -46,6 +46,8 @@ class WebRTCService {
               throw loadErr;
             }
           }
+          
+          this._setupNetworkRecovery();
 
           return this.device;
         } catch (err) {
@@ -317,6 +319,35 @@ class WebRTCService {
     } catch (err) {
       console.error('[WebRTC] Failed to resume consumer:', err.message);
     }
+  }
+
+  _setupNetworkRecovery() {
+    const handler = async () => {
+      if (!this.sendTransport || !this.recvTransport) return;
+      try {
+        if (!this.sendTransport.closed) await this.sendTransport.restartIce();
+        if (!this.recvTransport.closed) await this.recvTransport.restartIce();
+      } catch(e) { console.warn('ICE restart failed:', e.message); }
+    };
+    if (typeof navigator !== 'undefined' && navigator.connection) {
+      navigator.connection.addEventListener('change', handler);
+    }
+    window.addEventListener('online', handler);
+  }
+
+  cleanup() {
+    this.consumers.forEach(c => { try { c.close(); } catch(_){} });
+    this.consumers.clear();
+    this.producers.clear();
+    this.producerToConsumerMap.clear();
+    this.consumePromises.clear();
+    if (this.recvTransport && !this.recvTransport.closed) { try { this.recvTransport.close(); } catch(_){} }
+    if (this.sendTransport && !this.sendTransport.closed) { try { this.sendTransport.close(); } catch(_){} }
+    this.recvTransport = null;
+    this.sendTransport = null;
+    this.device = null;
+    this.sessionId = null;
+    this.consumeQueue = Promise.resolve();
   }
 
   async getConsumerStats(consumerId) {
