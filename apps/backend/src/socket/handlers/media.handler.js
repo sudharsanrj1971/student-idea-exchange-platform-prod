@@ -181,21 +181,30 @@ export function mediaHandler(io, socket) {
 
   // ── media:consume ──────────────────────────────────────
   socket.on('media:consume', async ({ sessionId, transportId, producerId, rtpCapabilities, _reqId }) => {
+    const mediaErrorWithReqId = (evt, msg) => {
+      logger.warn(`[media] ${evt} denied: ${msg}`, { socketId: socket.id, producerId, _reqId });
+      socket.emit(evt, { error: msg, _reqId });
+    };
     try {
+      logger.info('[media] consume RECEIVED', { producerId, transportId, sessionId, _reqId });
+
       if (!await isAuthorized(socket, sessionId))
-        return mediaError(socket, 'media:consumed', 'Not authorized for this session');
+        return mediaErrorWithReqId('media:consumed', 'Not authorized for this session');
 
       const router = await getRouter(sessionId);
       if (!router) {
-        return mediaError(socket, 'media:consumed', 'Mediasoup router not available for session');
+        return mediaErrorWithReqId('media:consumed', 'Mediasoup router not available for session');
       }
 
       const transport = socket.transports?.[transportId];
+      logger.info('[media] transport lookup', { transportId, found: !!transport, keys: Object.keys(socket.transports || {}) });
       if (!transport)
-        return mediaError(socket, 'media:consumed', 'Transport not found');
+        return mediaErrorWithReqId('media:consumed', 'Transport not found');
 
       // Try to consume locally; if not possible, attempt to pipe from the source router
-      if (!router.canConsume({ producerId, rtpCapabilities })) {
+      const canConsumeLocal = router.canConsume({ producerId, rtpCapabilities });
+      logger.info('[media] canConsume check', { producerId, canConsumeLocal });
+      if (!canConsumeLocal) {
         // Find the session that owns this producer
         const srcSession = await Session.findOne({ 'activeProducers.producerId': producerId }).select('_id').lean();
         if (srcSession && srcSession._id.toString() !== sessionId) {
@@ -210,11 +219,11 @@ export function mediaHandler(io, socket) {
           canConsume = router.canConsume({ producerId, rtpCapabilities });
         }
         if (!canConsume) {
-              return mediaError(socket, 'media:consumed', 'Cannot consume this producer even after piping');
+              return mediaErrorWithReqId('media:consumed', 'Cannot consume this producer even after piping');
             }
           } catch (pipeErr) {
             logger.error('Pipe producer error', { error: pipeErr.message });
-            return mediaError(socket, 'media:consumed', 'Failed to pipe producer across workers');
+            return mediaErrorWithReqId('media:consumed', 'Failed to pipe producer across workers');
           }
         } else {
           // Producer is in same session — retry before assuming stale
@@ -236,7 +245,7 @@ export function mediaHandler(io, socket) {
             } else {
               logger.warn('Producer exists but canConsume=false — codec mismatch?', { producerId });
             }
-            return mediaError(socket, 'media:consumed', 'Cannot consume this producer');
+            return mediaErrorWithReqId('media:consumed', 'Cannot consume this producer');
           }
         }
       }
@@ -251,6 +260,7 @@ export function mediaHandler(io, socket) {
       if (!socket.consumers) socket.consumers = {};
       socket.consumers[consumer.id] = consumer;
 
+      logger.info('[media] consume OK', { consumerId: consumer.id, producerId, kind: consumer.kind });
       socket.emit('media:consumed', {
         consumerId: consumer.id,
         producerId,
@@ -259,8 +269,8 @@ export function mediaHandler(io, socket) {
         _reqId,
       });
     } catch (err) {
-      logger.error('media:consume error', { error: err.message });
-      mediaError(socket, 'media:consumed', 'Failed to consume media');
+      logger.error('media:consume error DETAIL', { error: err.message, stack: err.stack, producerId, transportId, sessionId });
+      socket.emit('media:consumed', { error: 'Failed to consume media', _reqId });
     }
   });
 
@@ -348,3 +358,4 @@ export function mediaHandler(io, socket) {
     }
   });
 }
+
