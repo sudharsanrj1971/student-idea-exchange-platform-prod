@@ -37,6 +37,11 @@ export async function getRouter(sessionId) {
     return routerPromise;
   }
 
+  // Cache a promise IMMEDIATELY to prevent race: two callers both see empty cache and create two routers
+  let resolveRouter, rejectRouter;
+  const eagerPromise = new Promise((res, rej) => { resolveRouter = res; rejectRouter = rej; });
+  routerPromises.set(sessionId, eagerPromise);
+
   // Define creation logic as a promise
   routerPromise = (async () => {
     try {
