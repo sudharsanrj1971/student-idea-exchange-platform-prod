@@ -54,8 +54,9 @@ export default function VideoGrid({
       if (pId === localUser?._id?.toString()) return;
 
       // Match by userId first (stable across reconnects), fall back to socketId
-      const byUserId = pId ? Array.from(streams.values()).filter(s => s.userId === pId) : [];
+      const byUserId = pId ? Array.from(streams.values()).filter(s => s.userId?.toString() === pId) : [];
       const remoteStreams = byUserId.length > 0 ? byUserId : (streams.has(p.socketId) ? [streams.get(p.socketId)] : Array.from(streams.values()).filter(s => s.socketId === p.socketId));
+      console.log('[VideoGrid] participant', p.name, 'pId', pId, 'byUserId', byUserId.length, 'streams', Array.from(streams.values()).map(s => ({uid: s.userId, sid: s.socketId})));
       
       // BUG FIX: Normalize avatar field. The backend participant object stores the
       // profile pic as 'avatar' (set during session:join). However on different code
