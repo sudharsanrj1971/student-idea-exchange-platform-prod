@@ -68,6 +68,7 @@ export default function SessionPage() {
   const recordingChunksRef = useRef([]);
   const remoteStreamsRef = useRef(new Map());
   const consumingRef = useRef(new Set());
+  const handleNewProducerRef = useRef(null); // Always points to latest handleNewProducer
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -342,7 +343,8 @@ export default function SessionPage() {
     });
 
     socket.on('media:newProducer', (data) => {
-      handleNewProducer(data);
+      // Call via ref to always use the latest closure (avoids stale ref bug)
+      if (handleNewProducerRef.current) handleNewProducerRef.current(data);
     });
 
     socket.on('media:producerClosed', ({ producerId }) => {
@@ -595,6 +597,9 @@ export default function SessionPage() {
       consumingRef.current.delete(producerId);
     }
   };
+
+  // Keep ref in sync with latest handleNewProducer closure
+  handleNewProducerRef.current = handleNewProducer;
 
   const cleanup = () => {
     socketRef.current?.emit('session:leave', { sessionId });
