@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Maximize, Minimize, Download, Share2, Shield } from 'lucide-react';
+import { ArrowLeft, Maximize, Minimize, Download, Share2, Shield, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api.js';
 import { socketService } from '../services/socket.js';
