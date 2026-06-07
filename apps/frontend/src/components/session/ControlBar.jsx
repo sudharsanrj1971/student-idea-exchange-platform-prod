@@ -57,11 +57,14 @@ export default function ControlBar({
     onRaiseHand(newState);
   };
 
+  const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  const screenShareDisabled = isMobile && (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia);
+
   return (
     <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95vw] lg:w-fit transition-all duration-500 ease-in-out ${
       isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
     }`}>
-      <div className="flex flex-wrap lg:flex-nowrap items-center justify-center gap-2 sm:gap-3 p-3 px-4 sm:px-8 bg-surface-800/70 backdrop-blur-3xl saturate-150 border border-white/20 rounded-[28px] ring-1 ring-black/40 shadow-2xl transition-all duration-500">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 px-4 sm:px-8 bg-surface-800/70 backdrop-blur-3xl saturate-150 border border-white/20 rounded-[28px] ring-1 ring-black/40 shadow-2xl transition-all duration-500 overflow-x-auto custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
         
         {/* Group 1: Media Controls */}
         <div className="flex items-center gap-2">
@@ -127,17 +130,19 @@ export default function ControlBar({
           </div>
 
           {/* Screen Share */}
-          <ControlButton
-            id="control-screen"
-            active={isScreenSharing}
-            activeClass="bg-primary-500/20 border-primary-500/40 text-primary-300 shadow-[0_0_20px_rgba(67,97,238,0.2)]"
-            inactiveClass="bg-surface-700 hover:bg-surface-600"
-            onClick={onToggleScreenShare}
-            title="Share Screen"
-            label="Share"
-          >
-            <MonitorUp size={22} className={isScreenSharing ? 'text-primary-400' : ''} />
-          </ControlButton>
+          {!screenShareDisabled && (
+            <ControlButton
+              id="control-screen"
+              active={isScreenSharing}
+              activeClass="bg-primary-500/20 border-primary-500/40 text-primary-300 shadow-[0_0_20px_rgba(67,97,238,0.2)]"
+              inactiveClass="bg-surface-700 hover:bg-surface-600"
+              onClick={onToggleScreenShare}
+              title="Share Screen"
+              label="Share"
+            >
+              <MonitorUp size={22} className={isScreenSharing ? 'text-primary-400' : ''} />
+            </ControlButton>
+          )}
 
           {/* Fullscreen */}
           <ControlButton

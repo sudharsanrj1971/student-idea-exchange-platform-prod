@@ -34,7 +34,7 @@ export function chatHandler(io, socket) {
         _id: message._id,
         sender: { _id: user._id, name: user.name },
         senderName: user.name,
-        senderAvatar: currentAvatar,
+        profilePic: currentAvatar,
         text: message.text,
         createdAt: message.createdAt,
         sessionId,

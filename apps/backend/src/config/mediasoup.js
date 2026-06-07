@@ -53,7 +53,7 @@ export const mediasoupConfig = {
         announcedIp: announcedIp,
       },
     ],
-    initialAvailableOutgoingBitrate: 800000,
+    initialAvailableOutgoingBitrate: 1000000,
     minimumAvailableOutgoingBitrate: 600000,
     maxSctpMessageSize: 262144,
     maxIncomingBitrate: 1500000,

@@ -223,10 +223,11 @@ class WebRTCService {
         } else {
           // Standard webcams use simulcast: Low, Med, High
           encodings = [
-            { scaleResolutionDownBy: 4, maxBitrate: 100000 },
-            { scaleResolutionDownBy: 2, maxBitrate: 300000 },
-            { scaleResolutionDownBy: 1, maxBitrate: 900000 }
+            { rid: 'r0', maxBitrate: 100000, scalabilityMode: 'S1T3' },
+            { rid: 'r1', maxBitrate: 300000, scalabilityMode: 'S1T3' },
+            { rid: 'r2', maxBitrate: 900000, scalabilityMode: 'S1T3' },
           ];
+          codecOptions = { videoGoogleStartBitrate: 1000 };
         }
       } else if (track.kind === 'audio') {
         // Discontinuous Transmission (saves bandwidth when not speaking)

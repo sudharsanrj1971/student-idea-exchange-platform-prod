@@ -745,9 +745,9 @@ export default function SessionPage() {
 
   const toggleScreenShare = async () => {
     try {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile) {
-        toast.error('Screen sharing is not supported on mobile');
+      const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone/i.test(navigator.userAgent);
+      if (isMobile && (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia)) {
+        toast.error('Screen sharing is not supported on your browser. Please use desktop Chrome.');
         return;
       }
       if (isScreenSharing) {
@@ -812,11 +812,24 @@ export default function SessionPage() {
   }, []);
 
   const handleToggleRecording = async () => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      toast.error('Recording is not supported on mobile');
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+      toast.error('Recording is not supported on this device');
       return;
     }
+
+    let mimeType = 'video/webm;codecs=vp9';
+    if (!window.MediaRecorder || !MediaRecorder.isTypeSupported(mimeType)) {
+      mimeType = 'video/webm';
+      if (!window.MediaRecorder || !MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/mp4';
+        if (!window.MediaRecorder || !MediaRecorder.isTypeSupported(mimeType)) {
+          toast.error('Recording is not supported on this device');
+          return;
+        }
+      }
+    }
+
     if (isRecording) {
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stop();
@@ -824,8 +837,6 @@ export default function SessionPage() {
       }
       return;
     }
-
-
 
     try {
       // Prompt for tab capture — allows recording the meeting interface itself
@@ -836,7 +847,7 @@ export default function SessionPage() {
 
       recordingChunksRef.current = [];
       const mediaRecorder = new MediaRecorder(displayStream, {
-        mimeType: 'video/webm;codecs=vp9'
+        mimeType: mimeType
       });
 
       mediaRecorder.ondataavailable = (event) => {
@@ -1059,6 +1070,9 @@ export default function SessionPage() {
                 <h1 className="font-black text-xl sm:text-2xl tracking-tighter text-white/95 truncate max-w-[250px] sm:max-w-md">
                   {session?.title || 'Session'}
                 </h1>
+                <p className="text-xs text-white/60 truncate mt-0.5 max-w-[200px] sm:max-w-[300px]">
+                   Hosted by: {session?.host?.name || 'Authorized'}
+                </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-glow shadow-emerald-500/50" />
                   <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">
@@ -1171,15 +1185,15 @@ export default function SessionPage() {
         {/* Side Panels */}
         {(chatOpen || participantsOpen) && (
           <div className="fixed inset-0 z-50 md:relative md:inset-auto md:w-[350px] md:border-l border-border flex flex-col bg-surface-800 animate-in slide-in-from-right duration-300 shadow-2xl">
-            <div className="md:hidden absolute top-4 right-4 z-10">
+            <div className="md:hidden absolute top-3 right-3 z-10">
               <button 
                 onClick={() => {
                   setChatOpen(false);
                   setParticipantsOpen(false);
                 }}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10"
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 shadow-md backdrop-blur-md"
               >
-                <ArrowLeft size={20} />
+                <X size={20} />
               </button>
             </div>
             

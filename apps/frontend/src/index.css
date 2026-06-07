@@ -53,6 +53,11 @@
     color: var(--foreground);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  /* Prevent zoom on input focus for mobile */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }
 
 @layer components {

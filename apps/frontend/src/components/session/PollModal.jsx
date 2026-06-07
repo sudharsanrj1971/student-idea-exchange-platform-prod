@@ -102,7 +102,7 @@ export default function PollModal({
                 <button
                   onClick={handleStart}
                   disabled={!question.trim() || options.some(opt => !opt.trim())}
-                  className="w-full py-3 bg-primary-500 hover:bg-primary-400 text-white font-bold rounded-xl transition-all shadow-glow-primary active:scale-[0.98] disabled:opacity-50"
+                  className="w-full py-3 min-h-[44px] bg-primary-500 hover:bg-primary-400 text-white font-bold rounded-xl transition-all shadow-glow-primary active:scale-[0.98] disabled:opacity-50"
                 >
                   Start Poll
                 </button>
@@ -137,7 +137,7 @@ export default function PollModal({
                       initial={false}
                       onClick={() => !userVote && onVote(index)}
                       disabled={!!userVote}
-                      className={`w-full group relative overflow-hidden rounded-xl border transition-all text-left ${
+                      className={`w-full group relative overflow-hidden rounded-xl border transition-all text-left min-h-[44px] ${
                         isSelected 
                           ? 'border-primary-500 bg-primary-500/5' 
                           : 'border-white/10 bg-white/5'
