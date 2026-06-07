@@ -217,7 +217,7 @@ export default function VideoGrid({
           <div className="flex-1 flex flex-col gap-3 min-w-[200px] max-h-full">
           <div className="flex-1 flex flex-row md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pr-2 custom-scrollbar no-scrollbar md:no-scrollbar pb-2 md:pb-0">
             {paginatedOtherTiles.map((tile) => (
-              <div key={tile.id} className="min-w-[180px] md:min-w-0 aspect-video shrink-0" style={{ minHeight: '120px' }}>
+              <div key={tile.id} className="min-w-[180px] md:min-w-0 aspect-video shrink-0 w-full h-full" style={{ minHeight: '120px' }}>
                 <VideoTile 
                   {...tile} 
                   isPinned={pinnedId === tile.id}
@@ -257,7 +257,7 @@ export default function VideoGrid({
     <div className="flex-1 flex flex-col gap-2 p-2 sm:p-3 overflow-hidden min-h-0">
       <div className={`flex-1 grid ${gridCols} gap-2 sm:gap-3 overflow-y-auto custom-scrollbar min-h-0`} style={{ gridAutoRows: 'minmax(160px, 1fr)' }}>
         {paginatedOtherTiles.map((tile) => (
-          <div key={tile.id} className="relative" style={{ minHeight: '160px' }}>
+          <div key={tile.id} className="relative w-full h-full" style={{ minHeight: '160px' }}>
             <VideoTile 
               {...tile} 
               isPinned={pinnedId === tile.id}
@@ -385,6 +385,12 @@ const VideoTile = memo(({
     .toUpperCase() || '?';
 
   const hasVideo = !!(stream && stream.getVideoTracks().filter(t => t.readyState === 'live').length > 0);
+
+  useEffect(() => {
+    if (videoRef.current && hasVideo) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [hasVideo]);
 
   const activeRing = isSpeaking && !isMuted ? 'ring-primary-400/60 ring-4 shadow-[0_0_30px_rgba(67,97,238,0.4)] z-20' : '';
   const pinnedRing = isPinned ? 'ring-primary-500/80 ring-2' : '';
