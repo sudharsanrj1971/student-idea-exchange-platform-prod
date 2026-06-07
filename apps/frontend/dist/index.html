@@ -3,12 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="iChange — Real-time EdTech platform for live learning sessions with video, chat, and collaboration tools." />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="description" content="Real-time EdTech platform for live learning sessions with video, chat, and collaboration tools." />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="iChange — Live Learning Platform" />
+    <meta property="og:description" content="Real-time EdTech platform for live learning sessions with video, chat, and collaboration tools." />
+    <meta property="og:image" content="https://ichangehub.me/og-image.png" />
+    <meta property="og:url" content="https://ichangehub.me/" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="iChange — Live Learning Platform" />
+    <meta name="twitter:description" content="Real-time EdTech platform for live learning sessions with video, chat, and collaboration tools." />
+    <meta name="twitter:image" content="https://ichangehub.me/og-image.png" />
+
     <title>iChange — Live Learning Platform</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.ichangehub.me" />
+    <link rel="dns-prefetch" href="https://api.ichangehub.me" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script type="module" crossorigin src="/assets/index-CUfR0wre.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/react-vendor-BxaBit_w.js">
     <link rel="modulepreload" crossorigin href="/assets/ui-vendor-Cc2AUyow.js">
@@ -17,6 +38,32 @@
     <link rel="stylesheet" crossorigin href="/assets/index-DOZIx-h8.css">
   </head>
   <body class="bg-surface-900 text-white antialiased">
-    <div id="root"></div>
+    <div id="root">
+      <style>
+        .loader-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          width: 100vw;
+          background-color: #0f172a;
+        }
+        .loader {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(67, 97, 238, 0.2);
+          border-left-color: #4361ee;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+      <div class="loader-container">
+        <div class="loader"></div>
+      </div>
+    </div>
   </body>
 </html>
