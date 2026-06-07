@@ -214,7 +214,7 @@ export default function VideoGrid({
           <div className="flex-1 flex flex-col gap-3 min-w-[200px] max-h-full">
           <div className="flex-1 flex flex-row md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pr-2 custom-scrollbar no-scrollbar md:no-scrollbar pb-2 md:pb-0">
             {paginatedOtherTiles.map((tile) => (
-              <div key={tile.id} className="min-w-[180px] md:min-w-0 aspect-video shrink-0">
+              <div key={tile.id} className="min-w-[180px] md:min-w-0 aspect-video shrink-0" style={{ minHeight: '120px' }}>
                 <VideoTile 
                   {...tile} 
                   isPinned={pinnedId === tile.id}
@@ -252,16 +252,17 @@ export default function VideoGrid({
 
   return (
     <div className="flex-1 flex flex-col gap-2 p-2 sm:p-3 overflow-hidden min-h-0">
-      <div className={`flex-1 grid ${gridCols} gap-2 sm:gap-3 overflow-y-auto custom-scrollbar min-h-0`}>
+      <div className={`flex-1 grid ${gridCols} gap-2 sm:gap-3 overflow-y-auto custom-scrollbar min-h-0`} style={{ gridAutoRows: 'minmax(160px, 1fr)' }}>
         {paginatedOtherTiles.map((tile) => (
-          <VideoTile 
-            key={tile.id} 
-            {...tile} 
-            isPinned={pinnedId === tile.id}
-            onTogglePin={onTogglePin}
-            selectedSpeakerId={selectedSpeakerId}
-            dataSaver={dataSaver}
-          />
+          <div key={tile.id} className="relative" style={{ minHeight: '160px' }}>
+            <VideoTile 
+              {...tile} 
+              isPinned={pinnedId === tile.id}
+              onTogglePin={onTogglePin}
+              selectedSpeakerId={selectedSpeakerId}
+              dataSaver={dataSaver}
+            />
+          </div>
         ))}
       </div>
 
@@ -336,48 +337,18 @@ const VideoTile = memo(({
 
   useEffect(() => {
     const video = videoRef.current;
-
     if (!video || !stream) return;
 
-    if (video.srcObject !== stream) {
-      video.srcObject = stream;
-      video.muted = true; // always start muted for autoplay policy
-    }
+    // Always set srcObject to ensure we don't miss updates
+    video.srcObject = stream;
+    video.muted = !!(isLocal || isScreen); // remote should not be muted for audio playback
 
-    const startPlayback = async () => {
-      try {
+    video.play().catch(err => {
+      if (err.name === 'NotAllowedError') {
         video.muted = true;
-
-        await video.play();
-        video.muted = isLocal || isScreen; // unmute local, keep remote muted until gesture
-
-        if (video.readyState < 2) {
-          await new Promise(resolve => {
-            video.onloadeddata = () => resolve();
-          });
-        }
-
-        video.muted = isLocal || isScreen;
-
-        console.log('[VIDEO DEBUG]', {
-          readyState: video.readyState,
-          paused: video.paused,
-          currentTime: video.currentTime,
-          tracks: stream.getTracks().map(t => ({
-            kind: t.kind,
-            enabled: t.enabled,
-            muted: t.muted,
-            readyState: t.readyState
-          }))
-        });
-
-      } catch (err) {
-        console.warn('[VIDEO PLAY ERROR]', err);
+        video.play().catch(() => {});
       }
-    };
-
-    startPlayback();
-
+    });
   }, [stream, isLocal, isScreen]);
 
   useEffect(() => {
@@ -410,7 +381,7 @@ const VideoTile = memo(({
     .join('')
     .toUpperCase() || '?';
 
-  const hasVideo = stream && stream.getVideoTracks().length > 0;
+  const hasVideo = !!(stream && stream.getVideoTracks().filter(t => t.readyState === 'live').length > 0);
 
   const activeRing = isSpeaking && !isMuted ? 'ring-primary-400/60 ring-4 shadow-[0_0_30px_rgba(67,97,238,0.4)] z-20' : '';
   const pinnedRing = isPinned ? 'ring-primary-500/80 ring-2' : '';
@@ -421,18 +392,35 @@ const VideoTile = memo(({
   return (
     <div 
       ref={containerRef}
+      style={{ minHeight: '160px', minWidth: '160px', position: 'relative' }}
       className={`video-tile group relative w-full h-full rounded-[2.5rem] overflow-hidden bg-surface-900 ring-1 ring-white/10 transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${isTileFullScreen ? 'rounded-none' : ''} ${pinnedRing} ${activeRing}`} 
       id={`video-tile-${id}`}
     >
-      {hasVideo ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          webkit-playsinline="true"
-          muted={isLocal}
-          className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
-        />
+      {stream ? (
+        <>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            webkit-playsinline="true"
+            muted={!!(isLocal || isScreen)}
+            className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''} ${!hasVideo ? 'hidden' : ''}`}
+          />
+          {!hasVideo && (
+            <div className="absolute inset-0 bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/10 via-transparent to-transparent animate-pulse duration-[4s]" />
+              <div className={`rounded-full bg-gradient-to-b from-surface-700 to-surface-800 border-2 border-white/10 flex items-center justify-center font-black text-white relative z-10 shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/20 overflow-hidden transition-all duration-500 hover:scale-105 ${isDominant ? 'w-48 h-48' : 'w-24 h-24'}`}>
+                <Avatar src={user?.avatar} name={user?.name} size={isDominant ? 'xl' : 'lg'} className="w-full h-full" />
+              </div>
+              {isLocal && (
+                <div className="bg-red-500/5 backdrop-blur-md border border-red-500/20 px-4 py-1.5 rounded-xl flex items-center gap-2 z-10 animate-in fade-in zoom-in duration-500">
+                  <VideoOff size={14} className="text-red-500/60" />
+                  <span className="text-[10px] font-black text-red-500/60 uppercase tracking-[0.2em]">Privacy Mode</span>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
           <audio ref={audioRef} autoPlay playsInline muted={isLocal} className="hidden" />
