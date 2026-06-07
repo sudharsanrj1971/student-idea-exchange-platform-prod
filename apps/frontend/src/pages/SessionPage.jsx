@@ -1049,7 +1049,7 @@ export default function SessionPage() {
 
   return (
     <ErrorBoundary>
-      <div className="h-[100dvh] bg-background flex flex-col transition-colors duration-300 overflow-hidden">
+      <div className="h-[100dvh] bg-background flex flex-col transition-colors duration-300 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {/* Top bar - Hidden when in fullscreen for immersive experience */}
         {!isFullScreen && (
           <div className="h-20 sm:h-24 flex items-center justify-between px-6 sm:px-12 border-b border-white/5 bg-surface-900/60 backdrop-blur-3xl saturate-150 shrink-0 z-50 shadow-2xl transition-all duration-500">

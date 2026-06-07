@@ -47,11 +47,22 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply font-sans;
     background-color: var(--background);
     color: var(--foreground);
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  #root {
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Prevent zoom on input focus for mobile */

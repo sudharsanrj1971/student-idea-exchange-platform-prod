@@ -57,8 +57,7 @@ export default function ControlBar({
     onRaiseHand(newState);
   };
 
-  const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone/i.test(navigator.userAgent);
-  const screenShareDisabled = isMobile && (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia);
+  const isMobile = typeof navigator !== 'undefined' && (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || !navigator.mediaDevices?.getDisplayMedia);
 
   return (
     <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95vw] lg:w-fit transition-all duration-500 ease-in-out ${
@@ -130,7 +129,7 @@ export default function ControlBar({
           </div>
 
           {/* Screen Share */}
-          {!screenShareDisabled && (
+          {!isMobile && (
             <ControlButton
               id="control-screen"
               active={isScreenSharing}
@@ -266,8 +265,9 @@ export default function ControlBar({
           </div>
 
           {/* Record */}
-          <button
-            id="control-record"
+          {!isMobile && (
+            <button
+              id="control-record"
             onClick={onToggleRecording}
             className={`flex items-center gap-2 px-4 h-12 sm:h-14 rounded-2xl transition-all duration-300 font-bold justify-center border ${
               isRecording 
@@ -280,7 +280,8 @@ export default function ControlBar({
             <span className={`hidden sm:inline text-[10px] uppercase font-black tracking-widest leading-none ${isRecording ? 'text-red-500' : 'text-white/40'}`}>
               {isRecording ? 'Rec' : 'Record'}
             </span>
-          </button>
+            </button>
+          )}
 
           {/* Poll */}
           <ControlButton

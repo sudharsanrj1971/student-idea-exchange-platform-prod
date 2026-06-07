@@ -130,7 +130,12 @@ export async function buildMediaConstraints(selectedVideoId, selectedAudioId) {
     audio: {
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: true
+      autoGainControl: true,
+      googEchoCancellation: true,
+      googNoiseSuppression: true,
+      googAutoGainControl: true,
+      googHighpassFilter: true,
+      sampleRate: 48000
     }
   };
 

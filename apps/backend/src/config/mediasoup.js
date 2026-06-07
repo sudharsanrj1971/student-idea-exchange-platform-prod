@@ -24,6 +24,7 @@ export const mediasoupConfig = {
         mimeType: 'audio/opus',
         clockRate: 48000,
         channels: 2,
+        parameters: { 'sprop-stereo': 1, useinbandfec: 1, usedtx: 1, maxplaybackrate: 48000, 'sprop-maxcapturerate': 48000 }
       },
       {
         kind: 'video',

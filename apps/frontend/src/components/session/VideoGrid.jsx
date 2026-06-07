@@ -411,8 +411,8 @@ const VideoTile = memo(({
             ref={videoRef}
             autoPlay
             playsInline
+            muted={isLocal || isScreen ? true : undefined}
             style={{ display: hasVideo ? 'block' : 'none' }}
-            muted={!!(isLocal || isScreen)}
             className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
           />
           {!hasVideo && (
