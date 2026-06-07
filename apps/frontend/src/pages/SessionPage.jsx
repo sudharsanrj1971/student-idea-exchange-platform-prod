@@ -579,7 +579,26 @@ export default function SessionPage() {
         const existing = next.get(socketId) || {};
         const producerIds = existing.producerIds || new Set();
         producerIds.add(producerId);
-        next.set(socketId, { ...existing, stream: freshStream, kind: consumer.track.kind, socketId, userId: userIdStr || socketId, appData, name, producerIds, _t: Date.now() });
+
+        let videoProducerId = existing.videoProducerId;
+        let audioProducerId = existing.audioProducerId;
+        if (consumer.track.kind === 'video') videoProducerId = producerId;
+        if (consumer.track.kind === 'audio') audioProducerId = producerId;
+
+        next.set(socketId, { 
+          ...existing, 
+          stream: freshStream, 
+          kind: consumer.track.kind, 
+          socketId, 
+          userId: userIdStr || socketId, 
+          appData, 
+          name, 
+          producerIds, 
+          producerId, // Fallback for backward compatibility
+          videoProducerId,
+          audioProducerId,
+          _t: Date.now() 
+        });
 
         return next;
       });

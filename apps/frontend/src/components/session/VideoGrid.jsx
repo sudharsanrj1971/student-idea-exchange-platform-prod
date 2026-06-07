@@ -15,6 +15,8 @@ export default function VideoGrid({
   const { participants, raisedHands } = useSessionStore();
   const [currentPage, setCurrentPage] = useState(0);
 
+  console.log('[VG render]', streams?.size, streams ? [...streams.values()].map(s => s.userId) : []);
+
   const tiles = useMemo(() => {
     const allTiles = [];
 
@@ -84,7 +86,7 @@ export default function VideoGrid({
 
         if (camMicStreams.length > 0) {
            const pStream = camMicStreams[0].stream;
-           const vidProducerId = camMicStreams[0].producerId;
+           const vidProducerId = camMicStreams[0].videoProducerId || camMicStreams[0].producerId;
 
            matchedSocketIds.add(camMicStreams[0].socketId);
            allTiles.push({
@@ -136,6 +138,7 @@ export default function VideoGrid({
       allTiles.push({
         id: sid,
         stream: orphanStream,
+        producerId: streamData.videoProducerId || streamData.producerId,
         user: { name: streamData.name || 'Participant', avatar: null },
         isLocal: false,
         isCamOff: orphanStream.getVideoTracks().length === 0,
