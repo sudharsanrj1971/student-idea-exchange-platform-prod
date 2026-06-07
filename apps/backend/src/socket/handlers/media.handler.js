@@ -5,9 +5,9 @@ import { logger } from '../../config/logger.js';
 
 // Helper: emit an error through the RESPONSE channel so only the _request()
 // promise rejects — NOT the global socket.on('error') toast handler.
-function mediaError(socket, responseEvent, message) {
-  logger.warn(`[media] ${responseEvent} denied: ${message}`, { socketId: socket.id });
-  socket.emit(responseEvent, { error: message });
+function mediaError(socket, responseEvent, message, _reqId) {
+  logger.warn(`[media] ${responseEvent} denied: ${message}`, { socketId: socket.id, _reqId });
+  socket.emit(responseEvent, { error: message, _reqId });
 }
 
 /**
@@ -42,31 +42,31 @@ async function isAuthorized(socket, sessionId) {
 
 export function mediaHandler(io, socket) {
   // ── media:getRtpCapabilities ───────────────────────────
-  socket.on('media:getRtpCapabilities', async ({ sessionId }) => {
+  socket.on('media:getRtpCapabilities', async ({ sessionId, _reqId }) => {
     try {
       if (!await isAuthorized(socket, sessionId))
-        return mediaError(socket, 'media:rtpCapabilities', 'Not authorized for this session');
+        return mediaError(socket, 'media:rtpCapabilities', 'Not authorized for this session', _reqId);
 
       const router = await getRouter(sessionId);
       if (!router)
-        return mediaError(socket, 'media:rtpCapabilities', 'Mediasoup router not available');
+        return mediaError(socket, 'media:rtpCapabilities', 'Mediasoup router not available', _reqId);
 
-      socket.emit('media:rtpCapabilities', { rtpCapabilities: router.rtpCapabilities });
+      socket.emit('media:rtpCapabilities', { rtpCapabilities: router.rtpCapabilities, _reqId });
     } catch (err) {
       logger.error('media:getRtpCapabilities error', { error: err.message });
-      mediaError(socket, 'media:rtpCapabilities', `Failed to get RTP capabilities: ${err.message}`);
+      mediaError(socket, 'media:rtpCapabilities', `Failed to get RTP capabilities: ${err.message}`, _reqId);
     }
   });
 
   // ── media:createTransport ──────────────────────────────
-  socket.on('media:createTransport', async ({ sessionId, direction }) => {
+  socket.on('media:createTransport', async ({ sessionId, direction, _reqId }) => {
     try {
       if (!await isAuthorized(socket, sessionId))
-        return mediaError(socket, 'media:transportCreated', 'Not authorized for this session');
+        return mediaError(socket, 'media:transportCreated', 'Not authorized for this session', _reqId);
 
       const router = await getRouter(sessionId);
       if (!router) {
-        return mediaError(socket, 'media:transportCreated', 'Mediasoup router not available for this session');
+        return mediaError(socket, 'media:transportCreated', 'Mediasoup router not available for this session', _reqId);
       }
 
       const { transport, params } = await createWebRtcTransport(router);
@@ -74,44 +74,44 @@ export function mediaHandler(io, socket) {
       if (!socket.transports) socket.transports = {};
       socket.transports[transport.id] = transport;
 
-      socket.emit('media:transportCreated', { transportId: transport.id, params, direction });
+      socket.emit('media:transportCreated', { transportId: transport.id, params, direction, _reqId });
     } catch (err) {
       logger.error('media:createTransport error', { error: err.message });
-      mediaError(socket, 'media:transportCreated', 'Failed to create transport');
+      mediaError(socket, 'media:transportCreated', 'Failed to create transport', _reqId);
     }
   });
 
   // ── media:connectTransport ─────────────────────────────
-  socket.on('media:connectTransport', async ({ transportId, dtlsParameters }) => {
+  socket.on('media:connectTransport', async ({ transportId, dtlsParameters, _reqId }) => {
     try {
       const transport = socket.transports?.[transportId];
       if (!transport)
-        return mediaError(socket, 'media:transportConnected', 'Transport not found');
+        return mediaError(socket, 'media:transportConnected', 'Transport not found', _reqId);
 
       await transport.connect({ dtlsParameters });
-      socket.emit('media:transportConnected', { transportId });
+      socket.emit('media:transportConnected', { transportId, _reqId });
     } catch (err) {
       logger.error('media:connectTransport error', { error: err.message });
-      mediaError(socket, 'media:transportConnected', 'Failed to connect transport');
+      mediaError(socket, 'media:transportConnected', 'Failed to connect transport', _reqId);
     }
   });
 
   // ── media:produce ──────────────────────────────────────
-  socket.on('media:produce', async ({ sessionId, transportId, kind, rtpParameters, appData }) => {
+  socket.on('media:produce', async ({ sessionId, transportId, kind, rtpParameters, appData, _reqId }) => {
     try {
       if (!await isAuthorized(socket, sessionId))
-        return mediaError(socket, 'media:produced', 'Not authorized for this session');
+        return mediaError(socket, 'media:produced', 'Not authorized for this session', _reqId);
 
       const transport = socket.transports?.[transportId];
       if (!transport)
-        return mediaError(socket, 'media:produced', 'Transport not found');
+        return mediaError(socket, 'media:produced', 'Transport not found', _reqId);
 
       const producer = await transport.produce({ kind, rtpParameters, appData });
 
       if (!socket.producers) socket.producers = {};
       socket.producers[producer.id] = producer;
 
-      socket.emit('media:produced', { producerId: producer.id });
+      socket.emit('media:produced', { producerId: producer.id, _reqId });
 
       // Persist producer metadata to DB for cross-worker discovery
       await Session.findByIdAndUpdate(sessionId, {
@@ -158,24 +158,24 @@ export function mediaHandler(io, socket) {
 
     } catch (err) {
       logger.error('media:produce error', { error: err.message });
-      mediaError(socket, 'media:produced', 'Failed to produce media');
+      mediaError(socket, 'media:produced', 'Failed to produce media', _reqId);
     }
   });
 
   // ── media:getProducers ─────────────────────────────────
-  socket.on('media:getProducers', async ({ sessionId }) => {
+  socket.on('media:getProducers', async ({ sessionId, _reqId }) => {
     try {
       if (!await isAuthorized(socket, sessionId))
-        return socket.emit('media:producers', { producers: [] });
+        return socket.emit('media:producers', { producers: [], _reqId });
 
       // Fetch producers from DB to support cross-worker discovery
       const session = await Session.findById(sessionId).select('activeProducers').lean();
       const producers = session?.activeProducers || [];
       
-      socket.emit('media:producers', { producers });
+      socket.emit('media:producers', { producers, _reqId });
     } catch (err) {
       logger.error('media:getProducers error', { error: err.message });
-      socket.emit('media:producers', { producers: [] });
+      socket.emit('media:producers', { producers: [], _reqId });
     }
   });
 
@@ -284,28 +284,41 @@ export function mediaHandler(io, socket) {
   });
 
   // ── media:resumeConsumer ───────────────────────────────
-  socket.on('media:resumeConsumer', async ({ consumerId }) => {
+  socket.on('media:resumeConsumer', async ({ consumerId, _reqId }) => {
     try {
       const consumer = socket.consumers?.[consumerId];
-      if (!consumer) return;
+      if (!consumer) return mediaError(socket, 'media:resumed', 'Consumer not found', _reqId);
       await consumer.resume();
-      socket.emit('media:resumed', { consumerId });
+      socket.emit('media:resumed', { consumerId, _reqId });
     } catch (err) {
       logger.error('media:resumeConsumer error', { error: err.message });
-      mediaError(socket, 'media:resumed', 'Failed to resume consumer');
+      mediaError(socket, 'media:resumed', 'Failed to resume consumer', _reqId);
     }
   });
 
   // ── media:pauseConsumer ────────────────────────────────
-  socket.on('media:pauseConsumer', async ({ consumerId }) => {
+  socket.on('media:pauseConsumer', async ({ consumerId, _reqId }) => {
     try {
       const consumer = socket.consumers?.[consumerId];
-      if (!consumer) return;
+      if (!consumer) return mediaError(socket, 'media:paused', 'Consumer not found', _reqId);
       await consumer.pause();
-      socket.emit('media:paused', { consumerId });
+      socket.emit('media:paused', { consumerId, _reqId });
     } catch (err) {
       logger.error('media:pauseConsumer error', { error: err.message });
-      mediaError(socket, 'media:paused', 'Failed to pause consumer');
+      mediaError(socket, 'media:paused', 'Failed to pause consumer', _reqId);
+    }
+  });
+
+  // ── media:restartIce ───────────────────────────────────
+  socket.on('media:restartIce', async ({ transportId, _reqId }) => {
+    try {
+      const transport = socket.transports?.[transportId];
+      if (!transport) return mediaError(socket, 'media:iceRestarted', 'Transport not found', _reqId);
+      const iceParameters = await transport.restartIce();
+      socket.emit('media:iceRestarted', { iceParameters, _reqId });
+    } catch (err) {
+      logger.error('media:restartIce error', { error: err.message });
+      mediaError(socket, 'media:iceRestarted', 'Failed to restart ICE', _reqId);
     }
   });
 

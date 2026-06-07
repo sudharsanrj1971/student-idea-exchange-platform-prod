@@ -49,6 +49,9 @@ export async function resolveProfileIdentity(userId, skipCache = false) {
   } catch (e) {
     if (e.code === 11000) {
       profile = await UserProfile.findOne({ userId: userId }) || await UserProfile.findOne({ email: user.email });
+      if (!profile) {
+        profile = new UserProfile({ userId, email: user.email, profilePic: '' });
+      }
     } else throw e;
   }
 
@@ -79,7 +82,11 @@ export async function resolveProfileIdentity(userId, skipCache = false) {
   profile.profilePic = resolvedUrl;
   profile.profileSource = source;
   profile.lastSynced = new Date();
-  await profile.save();
+  try {
+    await profile.save();
+  } catch (saveErr) {
+    logger.warn('Non-fatal error saving UserProfile in resolution', { error: saveErr.message });
+  }
 
   // Update user.profilePic
   if (user.profilePic !== resolvedUrl) {

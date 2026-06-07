@@ -350,10 +350,16 @@ class WebRTCService {
 
   _setupNetworkRecovery() {
     const handler = async () => {
-      if (!this.sendTransport || !this.recvTransport) return;
+      if (!this.sendTransport && !this.recvTransport) return;
       try {
-        if (!this.sendTransport.closed) await this.sendTransport.restartIce();
-        if (!this.recvTransport.closed) await this.recvTransport.restartIce();
+        if (this.sendTransport && !this.sendTransport.closed) {
+          const { iceParameters } = await this._request('media:restartIce', { transportId: this.sendTransport.id });
+          await this.sendTransport.restartIce({ iceParameters });
+        }
+        if (this.recvTransport && !this.recvTransport.closed) {
+          const { iceParameters } = await this._request('media:restartIce', { transportId: this.recvTransport.id });
+          await this.recvTransport.restartIce({ iceParameters });
+        }
       } catch(e) { console.warn('ICE restart failed:', e.message); }
     };
     if (typeof navigator !== 'undefined' && navigator.connection) {
@@ -437,6 +443,7 @@ class WebRTCService {
         'media:resumeConsumer': 'media:resumed',
         'media:pauseConsumer': 'media:paused',
         'media:getProducers': 'media:producers',
+        'media:restartIce': 'media:iceRestarted',
       };
 
       const responseEvent = responseMap[event];
