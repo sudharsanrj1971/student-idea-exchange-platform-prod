@@ -1066,14 +1066,23 @@ export default function SessionPage() {
               
               <div className="w-px h-10 bg-white/10 hidden sm:block" />
               
-              <div className="flex flex-col">
-                <h1 className="font-black text-xl sm:text-2xl tracking-tighter text-white/95 truncate max-w-[250px] sm:max-w-md">
-                  {session?.title || 'Session'}
-                </h1>
-                <p className="text-xs text-white/60 truncate mt-0.5 max-w-[200px] sm:max-w-[300px]">
-                   Hosted by: {session?.host?.name || 'Authorized'}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-3">
+                {session?.hostProfilePic && (
+                  <img
+                    src={session.hostProfilePic}
+                    alt={session.hostName || session?.host?.name}
+                    className="w-9 h-9 rounded-full object-cover border-2 border-white/10 shadow-lg shrink-0 hidden sm:block"
+                  />
+                )}
+                <div className="flex flex-col">
+                  <h1 className="font-black text-xl sm:text-2xl tracking-tighter text-white/95 truncate max-w-[200px] sm:max-w-md">
+                    {session?.title || 'Session'}
+                  </h1>
+                  <p className="text-[11px] font-bold text-white/50 truncate mt-0.5 max-w-[180px] sm:max-w-[280px] uppercase tracking-wider">
+                    Hosted by: {session?.hostName || session?.host?.name || 'Authorized'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5 hidden">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-glow shadow-emerald-500/50" />
                   <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">
                     Live / {session?.host?.name || 'Authorized'}

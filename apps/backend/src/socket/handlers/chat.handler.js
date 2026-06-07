@@ -2,6 +2,7 @@ import { Message } from '../../models/Message.model.js';
 import { logger } from '../../config/logger.js';
 import { sanitize } from '../../utils/sanitizer.js';
 import { userCache } from '../index.js';
+import { UserProfile } from '../../models/UserProfile.model.js';
 
 export function chatHandler(io, socket) {
   const user = socket.user;
@@ -16,9 +17,14 @@ export function chatHandler(io, socket) {
 
       const isPrivate = !!recipientId;
       
-      // Fetch fresh avatar from cache or fallback to initial socket user
-      const cached = userCache.get(user._id.toString());
-      const currentAvatar = cached?.profilePic || cached?.avatar || user.profilePic || user.avatar;
+      // Fetch fresh avatar from UserProfile or fallback to initial socket user
+      let currentAvatar = user.profilePic || user.avatar;
+      try {
+        const profile = await UserProfile.findOne({ userId: user._id });
+        if (profile && profile.profilePic) {
+          currentAvatar = profile.profilePic;
+        }
+      } catch (e) {}
 
       const message = await Message.create({
         sessionId,
@@ -76,7 +82,11 @@ export function chatHandler(io, socket) {
         .limit(limit)
         .lean();
 
-      socket.emit('chat:history', { messages: messages.reverse(), sessionId });
+      const normalized = messages.map(m => ({
+        ...m,
+        profilePic: m.senderAvatar || m.profilePic || null,
+      }));
+      socket.emit('chat:history', { messages: normalized, sessionId });
     } catch (err) {
       logger.error('chat:history error', { error: err.message });
     }
@@ -96,10 +106,15 @@ export function chatHandler(io, socket) {
   });
 
   // ── session:reaction ───────────────────────────────────
-    socket.on('session:reaction', ({ sessionId, emoji }) => {
+    socket.on('session:reaction', async ({ sessionId, emoji }) => {
     try {
-      const cached = userCache.get(user._id.toString());
-      const currentAvatar = cached?.profilePic || cached?.avatar || user.profilePic || user.avatar;
+      let currentAvatar = user.profilePic || user.avatar;
+      try {
+        const profile = await UserProfile.findOne({ userId: user._id });
+        if (profile && profile.profilePic) {
+          currentAvatar = profile.profilePic;
+        }
+      } catch (e) {}
 
       // Broadcast reaction to everyone in the session
       io.to(sessionId).emit('session:reaction', {

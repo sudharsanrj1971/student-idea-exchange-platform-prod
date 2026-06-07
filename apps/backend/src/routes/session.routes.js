@@ -12,6 +12,7 @@ import {
   resolveByLinkCode,
 } from '../services/session.service.js';
 import { getAttendanceReport } from '../services/attendance.service.js';
+import { UserProfile } from '../models/UserProfile.model.js';
 
 const router = Router();
 
@@ -67,6 +68,17 @@ router.get('/:id', async (req, res, next) => {
   try {
     const session = await getSessionById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    session.hostName = session.host?.name;
+    session.hostProfilePic = session.host?.avatar || session.host?.profilePic;
+
+    if (session.host && session.host._id) {
+      const profile = await UserProfile.findOne({ userId: session.host._id });
+      if (profile && profile.profilePic) {
+        session.hostProfilePic = profile.profilePic;
+      }
+    }
+
     res.json({ session });
   } catch (err) {
     next(err);
