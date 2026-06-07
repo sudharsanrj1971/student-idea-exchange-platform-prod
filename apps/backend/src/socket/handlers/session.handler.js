@@ -113,7 +113,7 @@ export function sessionHandler(io, socket) {
         
         // Update local memory reference for subsequent emits
         session.participants.push({
-          userId: user._id,
+          userId: user._id.toString(),
           socketId: socket.id,
           name: user.name,
           avatar: user.profilePic || user.avatar || null,

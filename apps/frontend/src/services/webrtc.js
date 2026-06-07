@@ -245,6 +245,15 @@ class WebRTCService {
   }
 
 
+  async resetRecvTransport() {
+    if (this.recvTransport && !this.recvTransport.closed) {
+      try { this.recvTransport.close(); } catch(_) {}
+    }
+    this.recvTransport = null;
+    this.recvTransportPromise = null;
+    await this.createRecvTransport();
+  }
+
   async consumeProducer(producerId) {
     // Prevent concurrent consumes for the same producer
     if (this.consumePromises.has(producerId)) {
@@ -261,12 +270,30 @@ class WebRTCService {
         if (existing && !existing.closed) return existing;
       }
 
-      const { consumerId, kind, rtpParameters } = await this._request('media:consume', {
-        sessionId: this.sessionId,
-        transportId: this.recvTransport.id,
-        producerId,
-        rtpCapabilities: this.device.rtpCapabilities,
-      });
+      let consumeRes;
+      try {
+        consumeRes = await this._request('media:consume', {
+          sessionId: this.sessionId,
+          transportId: this.recvTransport.id,
+          producerId,
+          rtpCapabilities: this.device.rtpCapabilities,
+        });
+      } catch (err) {
+        if (err.message === 'DEAD_TRANSPORT') {
+          // Server detected dead transport — recreate and retry once
+          await this.resetRecvTransport();
+          consumeRes = await this._request('media:consume', {
+            sessionId: this.sessionId,
+            transportId: this.recvTransport.id,
+            producerId,
+            rtpCapabilities: this.device.rtpCapabilities,
+          });
+        } else {
+          throw err;
+        }
+      }
+      if (!consumeRes || consumeRes.error) throw new Error(consumeRes?.error || 'consume failed');
+      const { consumerId, kind, rtpParameters } = consumeRes;
       const consumer = await new Promise((resolve, reject) => {
         const task = () => this.recvTransport.consume({ id: consumerId, producerId, kind, rtpParameters });
         this.consumeQueue = this.consumeQueue.then(task, task).then(resolve, reject);

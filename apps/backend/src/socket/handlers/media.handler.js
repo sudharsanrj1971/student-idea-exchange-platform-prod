@@ -131,7 +131,7 @@ export function mediaHandler(io, socket) {
       socket.to(sessionId).emit('media:newProducer', {
         producerId: producer.id,
         socketId: socket.id,
-        userId: socket.user._id,
+        userId: socket.user._id.toString(),
         name: socket.user.name,
         kind,
         appData,
@@ -270,7 +270,16 @@ export function mediaHandler(io, socket) {
       });
     } catch (err) {
       logger.error('media:consume error DETAIL', { error: err.message, stack: err.stack, producerId, transportId, sessionId });
-      socket.emit('media:consumed', { error: 'Failed to consume media', _reqId });
+      if (err.message && err.message.includes('Channel request handler') && transportId) {
+        if (socket.transports?.[transportId]) {
+          try { socket.transports[transportId].close(); } catch(_) {}
+          delete socket.transports[transportId];
+          logger.warn('[media] Removed dead transport', { transportId });
+        }
+        socket.emit('media:consumed', { error: 'DEAD_TRANSPORT', transportId, producerId, _reqId });
+      } else {
+        socket.emit('media:consumed', { error: 'Failed to consume media', _reqId });
+      }
     }
   });
 

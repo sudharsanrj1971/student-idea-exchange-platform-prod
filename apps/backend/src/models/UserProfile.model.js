@@ -8,10 +8,11 @@ const UserProfileSchema = new mongoose.Schema({
     required: true, 
     unique: true 
   },
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: false,
     unique: true,
+    sparse: true,
     lowercase: true,
     trim: true
   },

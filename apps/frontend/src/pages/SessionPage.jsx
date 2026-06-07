@@ -536,6 +536,7 @@ export default function SessionPage() {
 
 
   const handleNewProducer = async ({ producerId, socketId, userId, name, kind, appData }) => {
+    const userIdStr = userId?.toString?.() || (typeof userId === 'string' ? userId : null);
     if (!webrtcService.device?.loaded) {
       setTimeout(() => handleNewProducer({ producerId, socketId, userId, name, kind, appData }), 1000);
       return;
@@ -568,10 +569,9 @@ export default function SessionPage() {
       }
 
       entry.stream.addTrack(consumer.track);
+      entry.tracks[consumer.track.kind] = consumer.track;
       const freshStream = new MediaStream(entry.stream.getTracks());
       entry.stream = freshStream;
-
-      entry.tracks[consumer.track.kind] = consumer.track;
 
       setRemoteStreams(prev => {
         const next = new Map(prev);
@@ -579,7 +579,7 @@ export default function SessionPage() {
         const existing = next.get(socketId) || {};
         const producerIds = existing.producerIds || new Set();
         producerIds.add(producerId);
-        next.set(socketId, { ...existing, stream: freshStream, kind: consumer.track.kind, socketId, userId: userId?.toString() || socketId, appData, name, producerIds });
+        next.set(socketId, { ...existing, stream: freshStream, kind: consumer.track.kind, socketId, userId: userIdStr || socketId, appData, name, producerIds, _t: Date.now() });
 
         return next;
       });

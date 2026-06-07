@@ -49,14 +49,17 @@ export default function VideoGrid({
     }
 
     // 3. Remote Tiles
+    const matchedSocketIds = new Set();
     participants.forEach((p) => {
       const pId = p.userId?.toString();
       if (pId === localUser?._id?.toString()) return;
 
       // Match by userId first (stable across reconnects), fall back to socketId
       const byUserId = pId ? Array.from(streams.values()).filter(s => s.userId?.toString() === pId) : [];
-      const remoteStreams = byUserId.length > 0 ? byUserId : (streams.has(p.socketId) ? [streams.get(p.socketId)] : Array.from(streams.values()).filter(s => s.socketId === p.socketId));
-      console.log('[VideoGrid] participant', p.name, 'pId', pId, 'byUserId', byUserId.length, 'streams', Array.from(streams.values()).map(s => ({uid: s.userId, sid: s.socketId})));
+      const bySocketId = streams.has(p.socketId) ? [streams.get(p.socketId)] : Array.from(streams.values()).filter(s => s.socketId === p.socketId);
+      const byName = Array.from(streams.values()).filter(s => s.name && p.name && s.name === p.name);
+      const remoteStreams = byUserId.length > 0 ? byUserId : bySocketId.length > 0 ? bySocketId : byName;
+      // eslint-disable-next-line no-console
       
       // BUG FIX: Normalize avatar field. The backend participant object stores the
       // profile pic as 'avatar' (set during session:join). However on different code
@@ -83,6 +86,7 @@ export default function VideoGrid({
            const pStream = camMicStreams[0].stream;
            const vidProducerId = camMicStreams[0].producerId;
 
+           matchedSocketIds.add(camMicStreams[0].socketId);
            allTiles.push({
               id: p.socketId,
               producerId: vidProducerId,
@@ -112,6 +116,34 @@ export default function VideoGrid({
         });
       }
     });
+
+    // 4. Orphan streams — streams that arrived before participants list updated
+    //    Render them so video isn't lost during the timing window
+    for (const [sid, streamData] of streams.entries()) {
+      if (streamData.appData?.screen) continue;
+      if (matchedSocketIds.has(sid)) continue;
+      // Skip if this stream belongs to local user
+      const isLocalStream = streamData.userId?.toString() === localUser?._id?.toString();
+      if (isLocalStream) continue;
+      // Skip if already matched via userId
+      const alreadyMatched = Array.from(matchedSocketIds).some(msid => {
+        const ms = streams.get(msid);
+        return ms && ms.userId?.toString() === streamData.userId?.toString();
+      });
+      if (alreadyMatched) continue;
+      const orphanStream = streamData.stream;
+      if (!orphanStream) continue;
+      allTiles.push({
+        id: sid,
+        stream: orphanStream,
+        user: { name: streamData.name || 'Participant', avatar: null },
+        isLocal: false,
+        isCamOff: orphanStream.getVideoTracks().length === 0,
+        isMuted: orphanStream.getAudioTracks().length === 0,
+        hasRaisedHand: false,
+        isScreen: false,
+      });
+    }
 
     return allTiles;
   }, [participants, streams, raisedHands, localStream, localUser, isMuted, isCamOff, localScreenStream, hideNonVideo, consumerStats]);
