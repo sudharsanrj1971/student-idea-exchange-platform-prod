@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ichangehub.me/sitemap.xml
