@@ -413,7 +413,7 @@ const VideoTile = memo(({
             playsInline
             webkit-playsinline="true"
             muted={!!(isLocal || isScreen)}
-            className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''} ${!hasVideo ? 'hidden' : ''}`}
+            className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`} style={{ display: hasVideo ? 'block' : 'none' }}
           />
           {!hasVideo && (
             <div className="absolute inset-0 bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 overflow-hidden">
