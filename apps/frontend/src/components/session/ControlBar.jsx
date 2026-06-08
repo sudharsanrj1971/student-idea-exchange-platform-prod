@@ -274,7 +274,7 @@ export default function ControlBar({
             title={isRecording ? 'Stop Recording' : 'Start Recording'}
           >
             <Disc size={22} className={isRecording ? 'text-red-500 shadow-glow shadow-red-500/50' : 'text-primary-400/80'} />
-            <span className={`hidden sm:inline text-[10px] uppercase font-black tracking-widest leading-none ${isRecording ? 'text-red-500' : 'text-white/40'}`}>
+            <span className={`text-[10px] uppercase font-black tracking-widest leading-none ${isRecording ? 'text-red-500' : 'text-white/40'}`}>
               {isRecording ? 'Stop Record' : 'Start Record'}
             </span>
             </button>
