@@ -129,8 +129,7 @@ export default function ControlBar({
           </div>
 
           {/* Screen Share */}
-          {!isMobile && (
-            <ControlButton
+          <ControlButton
               id="control-screen"
               active={isScreenSharing}
               activeClass="bg-primary-500/20 border-primary-500/40 text-primary-300 shadow-[0_0_20px_rgba(67,97,238,0.2)]"
@@ -141,7 +140,6 @@ export default function ControlBar({
             >
               <MonitorUp size={22} className={isScreenSharing ? 'text-primary-400' : ''} />
             </ControlButton>
-          )}
 
           {/* Fullscreen */}
           <ControlButton
@@ -277,7 +275,7 @@ export default function ControlBar({
           >
             <Disc size={22} className={isRecording ? 'text-red-500 shadow-glow shadow-red-500/50' : 'text-primary-400/80'} />
             <span className={`hidden sm:inline text-[10px] uppercase font-black tracking-widest leading-none ${isRecording ? 'text-red-500' : 'text-white/40'}`}>
-              {isRecording ? 'Rec' : 'Record'}
+              {isRecording ? 'Stop Record' : 'Start Record'}
             </span>
             </button>
 
