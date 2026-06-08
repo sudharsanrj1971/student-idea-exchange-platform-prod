@@ -1194,7 +1194,7 @@ export default function SessionPage() {
         {/* Side Panels */}
         {(chatOpen || participantsOpen) && (
           <div className="fixed inset-0 z-50 md:relative md:inset-auto md:w-[350px] md:border-l border-border flex flex-col bg-surface-800 animate-in slide-in-from-right duration-300 shadow-2xl">
-            <div className="md:hidden absolute top-3 right-3 z-10">
+            <div className="absolute top-3 right-3 z-10">
               <button 
                 onClick={() => {
                   setChatOpen(false);

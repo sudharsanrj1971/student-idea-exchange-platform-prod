@@ -173,8 +173,8 @@ export default function MediaSettingsModal({ isOpen, onClose, selectedVideoId, s
   const speakerDevices = devices.filter(d => d.kind === 'audiooutput');
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="w-full max-w-5xl bg-[#0f1115] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
+      <div className="w-full max-w-5xl bg-[#0f1115] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible">
         {/* Abstract Glows */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
