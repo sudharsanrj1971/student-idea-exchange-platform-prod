@@ -223,9 +223,9 @@ class WebRTCService {
         } else {
           // Standard webcams use simulcast: Low, Med, High
           encodings = [
-            { rid: 'r0', maxBitrate: 100000, scalabilityMode: 'S1T3' },
-            { rid: 'r1', maxBitrate: 300000, scalabilityMode: 'S1T3' },
-            { rid: 'r2', maxBitrate: 900000, scalabilityMode: 'S1T3' },
+            { rid: 'r0', maxBitrate: 200000, scalabilityMode: 'S1T3' },
+            { rid: 'r1', maxBitrate: 600000, scalabilityMode: 'S1T3' },
+            { rid: 'r2', maxBitrate: 1800000, scalabilityMode: 'S1T3' },
           ];
           codecOptions = { videoGoogleStartBitrate: 1000 };
         }

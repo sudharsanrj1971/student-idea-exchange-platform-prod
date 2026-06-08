@@ -123,9 +123,9 @@ export async function buildMediaConstraints(selectedVideoId, selectedAudioId) {
   const constraints = {
     video: {
       facingMode: 'user',
-      width: { ideal: 640, max: 1280 },
-      height: { ideal: 480, max: 720 },
-      frameRate: { ideal: 15, max: 30 }
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 },
+      frameRate: { ideal: 30, max: 60 }
     },
     audio: {
       echoCancellation: true,
@@ -135,7 +135,11 @@ export async function buildMediaConstraints(selectedVideoId, selectedAudioId) {
       googNoiseSuppression: true,
       googAutoGainControl: true,
       googHighpassFilter: true,
-      sampleRate: 48000
+      googEchoCancellationMobile: true,
+      suppressLocalAudioPlayback: true,
+      sampleRate: 48000,
+      sampleSize: 16,
+      channelCount: 1
     }
   };
 
