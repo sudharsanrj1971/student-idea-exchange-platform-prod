@@ -57,7 +57,7 @@ export default function ControlBar({
     onRaiseHand(newState);
   };
 
-  const isMobile = typeof navigator !== 'undefined' && (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || !navigator.mediaDevices?.getDisplayMedia);
+  const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   return (
     <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95vw] lg:w-fit transition-all duration-500 ease-in-out ${
