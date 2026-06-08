@@ -265,8 +265,7 @@ export default function ControlBar({
           </div>
 
           {/* Record */}
-          {!isMobile && (
-            <button
+          <button
               id="control-record"
             onClick={onToggleRecording}
             className={`flex items-center gap-2 px-4 h-12 sm:h-14 rounded-2xl transition-all duration-300 font-bold justify-center border ${
@@ -281,7 +280,6 @@ export default function ControlBar({
               {isRecording ? 'Rec' : 'Record'}
             </span>
             </button>
-          )}
 
           {/* Poll */}
           <ControlButton
