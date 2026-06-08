@@ -37,7 +37,7 @@ import { Config } from './models/Config.model.js';
 import crypto from 'crypto';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import passport from './config/passport.js';
+import passport, { configurePassport } from './config/passport.js';
 import { redisClient } from './config/redis.js';
 
 validateEnv();
@@ -111,6 +111,7 @@ if (isProd) {
     try {
       logger.info('📦 Starting Bootstrap...');
       await connectDB();
+      configurePassport();
       logger.info('📦 Database phase complete');
       
       // ─── ONE-TIME DB PATCH: Migrate to UserProfile ──────
