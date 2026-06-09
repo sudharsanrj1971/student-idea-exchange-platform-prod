@@ -62,8 +62,10 @@ export default function SessionPage() {
   const [activePoll, setActivePoll] = useState(null);
   const [pollVotes, setPollVotes] = useState({}); // optionIndex -> count
   const [userVote, setUserVote] = useState(null);
-  // FIX 6: Global announcement messages shown in a dedicated banner
-  const [announcements, setAnnouncements] = useState([]);
+  // FIX 4: Single announcement banner (replaces old announcements array)
+  const [announcement, setAnnouncement] = useState(null);
+  // FIX 3: Track raised hands as a Set of userIds
+  const [raisedHands, setRaisedHands] = useState(new Set());
   const chatOpenRef = useRef(chatOpen);
   const speechRecoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -164,38 +166,59 @@ export default function SessionPage() {
     };
   }, [sessionId]);
 
-  // FIX 1: Add beforeunload + popstate listeners so pressing the browser back
+  // FIX 5: Add beforeunload + popstate listeners so pressing the browser back
   // button or closing the tab properly ends the session (no ghost tiles).
   useEffect(() => {
-    const handlePopState = () => { cleanup(); };
-    const handleBeforeUnload = () => { cleanup(); };
+    const handlePopState = () => {
+      enterPiP();
+      cleanup();
+    };
+    window.onbeforeunload = () => { cleanup(); };
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
+      window.onbeforeunload = null;
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
+  // FIX 2: PiP helpers — always query DOM at call time, never use stale ref.
+  const enterPiP = async () => {
+    try {
+      const localVid = document.querySelector('video[data-local="true"]');
+      const anyVid = document.querySelector('video');
+      const target = localVid || anyVid;
+      if (target && document.pictureInPictureEnabled && !document.pictureInPictureElement) {
+        await target.requestPictureInPicture();
+      }
+    } catch (e) {
+      console.warn('[PiP] Could not enter PiP:', e.message);
+    }
+  };
+
+  const exitPiP = async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      }
+    } catch (e) {
+      console.warn('[PiP] Could not exit PiP:', e.message);
+    }
+  };
+
   // FIX 2: Auto-trigger Picture-in-Picture when the tab becomes hidden.
-  // This keeps the local video visible even when the user switches apps.
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      const videoEl = localVideoRef.current;
+    const onVisibilityChange = () => {
       if (document.hidden) {
-        // Tab hidden — try to pop out the local video
-        if (videoEl && document.pictureInPictureEnabled && !document.pictureInPictureElement) {
-          try { await videoEl.requestPictureInPicture(); } catch (e) { /* browser may deny */ }
-        }
+        enterPiP();
       } else {
-        // Tab visible again — exit PiP and restore normal layout
-        if (document.pictureInPictureElement) {
-          try { await document.exitPictureInPicture(); } catch (e) {}
-        }
+        exitPiP();
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      exitPiP();
+    };
   }, []);
 
   const hasRetriedRef = useRef(false);
@@ -262,7 +285,7 @@ export default function SessionPage() {
     const events = [
       'connect', 'disconnect', 'reconnect',
       'session:participants', 'session:joined_toast', 'session:left_toast',
-      'hand:update', 'hand:raised-toast', 'admin:muteAll', 'admin:muted', 'admin:kicked',
+      'hand:update', 'hand:raised-toast', 'hand:lowered', 'admin:muteAll', 'admin:muted', 'admin:kicked',
       'session:reaction', 'media:newProducer', 'media:producerClosed', 'error',
       'session:caption', 'poll:started', 'poll:vote_cast', 'poll:ended',
       'receive-global-message'
@@ -306,16 +329,29 @@ export default function SessionPage() {
       toggleHand(userId, raised);
     });
 
-    // FIX 5: All participants (not just admin) receive this toast when someone raises their hand.
+    // FIX 3: Persist raised-hand badge on video tile; show toast to others.
     socket.on('hand:raised-toast', ({ userId: raiserId, name: raiserName }) => {
+      setRaisedHands(prev => new Set([...prev, raiserId?.toString()]));
       if (raiserId?.toString() !== user?._id?.toString()) {
         toast(`✋ ${raiserName} raised their hand`, { duration: 3000 });
       }
     });
 
-    // FIX 6: Receive admin announcements and push to announcement state
+    // FIX 3: Clear badge when host lowers a hand.
+    socket.on('hand:lowered', ({ userId }) => {
+      setRaisedHands(prev => {
+        const next = new Set(prev);
+        next.delete(userId?.toString());
+        return next;
+      });
+    });
+
+    // FIX 4: Show full-width announcement banner, auto-dismiss after 10 s.
     socket.on('receive-global-message', (msg) => {
-      setAnnouncements(prev => [...prev.slice(-9), msg]); // keep last 10
+      if (msg.isAnnouncement) {
+        setAnnouncement(msg.content);
+        setTimeout(() => setAnnouncement(null), 10000);
+      }
       if (!chatOpenRef.current) setUnreadCount(prev => prev + 1);
     });
 
@@ -1183,28 +1219,37 @@ export default function SessionPage() {
 
       {isReconnecting && <ReconnectBanner />}
 
-      {/* FIX 6: Announcement Banner — shown at the top of the video area when admin sends a global message */}
-      {announcements.length > 0 && (
-        <div className="mx-4 mt-2 space-y-2 z-40">
-          {announcements.map((ann) => (
-            <div
-              key={ann._id}
-              className="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm shadow-lg animate-in slide-in-from-top duration-300"
-            >
-              <span className="text-amber-400 text-lg shrink-0">📢</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-0.5">Announcement</p>
-                <p className="text-sm text-white/90 break-words">{ann.content}</p>
-              </div>
-              <button
-                onClick={() => setAnnouncements(prev => prev.filter(a => a._id !== ann._id))}
-                className="text-white/30 hover:text-white/70 transition-colors shrink-0 mt-0.5"
-                aria-label="Dismiss announcement"
-              >
-                ×
-              </button>
+      {/* FIX 4: Full-width announcement banner — auto-dismisses after 10 s */}
+      {announcement && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          zIndex: 9999,
+          background: '#f59e0b',
+          color: '#1f2937',
+          padding: '12px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          animation: 'slideDown 0.3s ease'
+        }}>
+          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+            <span style={{fontSize:'20px'}}>📢</span>
+            <div>
+              <p style={{fontWeight:700, fontSize:'13px', margin:0}}>ANNOUNCEMENT FROM ADMIN</p>
+              <p style={{fontSize:'15px', margin:0}}>{announcement}</p>
             </div>
-          ))}
+          </div>
+          <button
+            onClick={() => setAnnouncement(null)}
+            style={{background:'none', border:'none', fontSize:'20px', cursor:'pointer', color:'#1f2937'}}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -1229,6 +1274,37 @@ export default function SessionPage() {
               consumerStats={consumerStats}
               layoutMode={layoutMode}
             />
+
+            {/* FIX 3: Host-only raised hands control panel */}
+            {(() => {
+              const isHost = user?._id?.toString() === (session?.host?._id || session?.host)?.toString();
+              return isHost && raisedHands.size > 0 && (
+                <div style={{
+                  position: 'fixed',
+                  right: '16px',
+                  top: '80px',
+                  background: '#1f2937',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  zIndex: 100,
+                  minWidth: '200px',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+                }}>
+                  <p style={{color:'#f9fafb', fontWeight:600, marginBottom:'8px', margin:'0 0 8px 0'}}>✋ Raised Hands</p>
+                  {[...raisedHands].map(uid => (
+                    <div key={uid} style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px'}}>
+                      <span style={{color:'#d1d5db', fontSize:'14px'}}>{uid}</span>
+                      <button
+                        onClick={() => socketRef.current?.emit('lower-hand', { sessionId, userId: uid })}
+                        style={{fontSize:'12px', padding:'2px 8px', borderRadius:'6px', background:'#374151', color:'white', border:'none', cursor:'pointer'}}
+                      >
+                        Lower
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           <ControlBar
             isMuted={isMuted}
             isCamOff={isCamOff}

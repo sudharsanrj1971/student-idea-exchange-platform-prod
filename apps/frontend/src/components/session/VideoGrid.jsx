@@ -412,6 +412,7 @@ const VideoTile = memo(({
             autoPlay
             playsInline
             muted={isLocal || isScreen ? true : undefined}
+            data-local={isLocal ? 'true' : undefined}
             style={{ display: hasVideo ? 'block' : 'none' }}
             className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
           />
@@ -522,6 +523,27 @@ const VideoTile = memo(({
         </div>
       </div>
 
+
+      {/* Raised Hand Badge Overlay (top-left, GMeet-style) */}
+      {hasRaisedHand && (
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          background: 'rgba(0,0,0,0.6)',
+          borderRadius: '20px',
+          padding: '4px 10px',
+          fontSize: '18px',
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          color: 'white',
+          fontWeight: '600'
+        }}>
+          ✋ <span style={{fontSize:'12px'}}>{user?.name}</span>
+        </div>
+      )}
 
       {isLocal && !isPinned && (
         <div className="absolute top-3 right-3 mr-12">

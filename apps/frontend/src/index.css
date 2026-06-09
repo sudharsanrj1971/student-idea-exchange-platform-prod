@@ -236,6 +236,12 @@
     "Noto Color Emoji", "Android Emoji", sans-serif;
 }
 
+/* FIX 4: slideDown animation for the full-width announcement banner */
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 /* FIX 6: Announcement banner styles for admin global messages in chat / overlay */
 .announcement-banner {
   background: rgba(245, 158, 11, 0.08);

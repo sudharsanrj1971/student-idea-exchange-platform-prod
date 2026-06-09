@@ -113,6 +113,8 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
     return senderId === sessionHostId;
   };
 
+  const EMOJI_FONT = '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+
   const renderTextWithLinks = (text) => {
     if (!text) return null;
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -125,7 +127,7 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
           </a>
         );
       }
-      return <span key={i} className="break-words">{part}</span>;
+      return <span key={i} className="break-words" style={{ fontFamily: EMOJI_FONT }}>{part}</span>;
     });
   };
 
@@ -159,7 +161,10 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
               return (
                 <div key={msg._id || i} className="announcement-banner">
                   <span className="announcement-label">📢 {msg.senderName || 'Announcement'}</span>
-                  <p className="text-sm text-amber-900 dark:text-amber-100 break-words">{msg.content || msg.text}</p>
+                  <p className="text-sm text-amber-900 dark:text-amber-100 break-words"
+                     style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}>
+                    {msg.content || msg.text}
+                  </p>
                   <span className="text-[10px] text-amber-700/60 mt-1 block">{formatTime(msg.createdAt)}</span>
                 </div>
               );

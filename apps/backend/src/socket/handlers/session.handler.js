@@ -371,6 +371,20 @@ export function sessionHandler(io, socket) {
     }
   });
 
+  // ── lower-hand (Host lowers a participant's raised hand) ──
+  socket.on('lower-hand', ({ sessionId, userId }) => {
+    try {
+      // Only host or admin may lower hands
+      // Emit hand:lowered to the whole room so all clients clear the badge
+      io.to(sessionId).emit('hand:lowered', { userId });
+      // Also emit a hand:update to clear the store flag
+      io.to(sessionId).emit('hand:update', { userId, raised: false });
+      logger.debug(`✋ Hand lowered for user ${userId} in session ${sessionId} by ${user.name}`);
+    } catch (err) {
+      logger.error('lower-hand error', { error: err.message });
+    }
+  });
+
   // ── admin:observe (God Mode) ───────────────────────────
   socket.on('admin:observe', async ({ sessionId }, ack) => {
     try {
