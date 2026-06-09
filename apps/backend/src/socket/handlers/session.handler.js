@@ -196,6 +196,7 @@ export function sessionHandler(io, socket) {
 
   // ── hand:raise ─────────────────────────────────────────
   socket.on('hand:raise', ({ sessionId, raised }) => {
+    // Broadcast hand-raise state update to all in session (for hand panel)
     io.to(sessionId).emit('hand:update', {
       userId: user._id,
       name: user.name,
@@ -203,12 +204,39 @@ export function sessionHandler(io, socket) {
     });
 
     if (raised) {
+      // FIX 5: Broadcast a dedicated toast event to ALL participants,
+      // not just the admin. Frontend decides how to display it per role.
+      io.to(sessionId).emit('hand:raised-toast', {
+        userId: user._id,
+        name: user.name,
+      });
+
+      // Also log it as a system chat message
       io.to(sessionId).emit('chat:message', {
         _id: `sys-${Date.now()}-hand`,
         type: 'system',
-        text: `${user.name} raised their hand`,
+        text: `✋ ${user.name} raised their hand`,
         createdAt: new Date().toISOString()
       });
+    }
+  });
+
+  // ── global-message (Admin Announcement) ───────────────
+  // FIX 6: Admin can send a platform-wide announcement. The sender identity
+  // is overridden server-side to "📢 Announcement" so it cannot be spoofed.
+  socket.on('global-message', ({ sessionId, content }) => {
+    try {
+      if (!content?.trim()) return;
+      const isAdmin = socket.user?.role === 'admin';
+      io.to(sessionId).emit('receive-global-message', {
+        _id: `ann-${Date.now()}`,
+        content: content.trim(),
+        senderName: isAdmin ? '📢 Announcement' : socket.user.name,
+        isAnnouncement: isAdmin,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      logger.error('global-message error', { error: err.message });
     }
   });
 

@@ -21,6 +21,8 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  // FIX 3: Track maintenance mode so admin can still see the login form
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
   // ── Sanitization: Ensure form is fresh on mount ──
   useEffect(() => {
@@ -83,7 +85,14 @@ export default function LoginPage() {
       // Sync profile in background after navigation
       refreshProfile().catch(() => {});
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      // FIX 3: Special handling for maintenance mode (503)
+      if (err.response?.status === 503) {
+        setIsMaintenanceMode(true);
+        toast.error('Platform is under maintenance. Admin login still works.');
+      } else {
+        setIsMaintenanceMode(false);
+        toast.error(err.response?.data?.error || err.response?.data?.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -108,6 +117,17 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold text-foreground">Sign In</h2>
             <p className="text-foreground/30 text-sm mt-1">Enter your email or student ID to continue</p>
           </div>
+
+          {/* FIX 3: Maintenance mode banner — form stays enabled so admin can log in */}
+          {isMaintenanceMode && (
+            <div className="mb-6 flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10">
+              <span className="text-amber-400 text-lg shrink-0">🛠️</span>
+              <div>
+                <p className="text-sm font-bold text-amber-300">Platform Under Maintenance</p>
+                <p className="text-xs text-amber-400/70 mt-0.5">Admin credentials will still work. Users will be redirected after maintenance ends.</p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
             {/* Identifier Field (Email or ID) */}

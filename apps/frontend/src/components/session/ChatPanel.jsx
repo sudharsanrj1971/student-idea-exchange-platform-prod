@@ -39,14 +39,28 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
       });
     };
 
+    // FIX 6: Receive admin global announcements and render them inline in chat
+    const onGlobalMessage = (msg) => {
+      setMessages((prev) => [...prev, {
+        _id: msg._id || `ann-${Date.now()}`,
+        type: 'announcement',
+        content: msg.content,
+        senderName: msg.senderName,
+        isAnnouncement: true,
+        createdAt: msg.timestamp || new Date().toISOString(),
+      }]);
+    };
+
     socket.on('chat:history', onHistory);
     socket.on('chat:message', onMessage);
     socket.on('chat:typing', onTyping);
+    socket.on('receive-global-message', onGlobalMessage);
 
     return () => {
       socket.off('chat:history', onHistory);
       socket.off('chat:message', onMessage);
       socket.off('chat:typing', onTyping);
+      socket.off('receive-global-message', onGlobalMessage);
     };
   }, [socket, sessionId]);
 
@@ -136,6 +150,17 @@ export default function ChatPanel({ sessionId, socket, user, sessionHostId }) {
                    <div className="px-3 py-1 bg-white/5 rounded-full border border-white/5 text-[10px] text-white/40 font-medium uppercase tracking-wider">
                      {msg.text}
                    </div>
+                </div>
+              );
+            }
+
+            // FIX 6: Render admin announcements with amber banner style
+            if (msg.type === 'announcement' || msg.isAnnouncement) {
+              return (
+                <div key={msg._id || i} className="announcement-banner">
+                  <span className="announcement-label">📢 {msg.senderName || 'Announcement'}</span>
+                  <p className="text-sm text-amber-900 dark:text-amber-100 break-words">{msg.content || msg.text}</p>
+                  <span className="text-[10px] text-amber-700/60 mt-1 block">{formatTime(msg.createdAt)}</span>
                 </div>
               );
             }

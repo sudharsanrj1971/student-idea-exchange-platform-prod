@@ -221,4 +221,35 @@
     90%  { transform: translateY(-80vh) translateX(calc(var(--sway) * -0.5)) scale(0.8); opacity: 0.6; }
     100% { transform: translateY(-100vh) translateX(0) scale(0.6); opacity: 0; }
   }
+
+  /* FIX 4: Emoji-safe font stack for chat messages so all Unicode emoji
+     renders correctly across Chrome, Safari, Windows, and macOS */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* FIX 4: Chat emoji font stack — outside @layer to avoid Tailwind purging */
+#chat-panel .flex.gap-3,
+#chat-panel input,
+.chat-message {
+  font-family: system-ui, -apple-system, "Segoe UI Emoji", "Apple Color Emoji",
+    "Noto Color Emoji", "Android Emoji", sans-serif;
+}
+
+/* FIX 6: Announcement banner styles for admin global messages in chat / overlay */
+.announcement-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 0;
+}
+.announcement-label {
+  font-weight: 700;
+  font-size: 10px;
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
 }

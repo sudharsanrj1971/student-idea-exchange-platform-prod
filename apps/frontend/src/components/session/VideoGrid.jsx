@@ -467,7 +467,8 @@ const VideoTile = memo(({
           {isPinned ? <PinOff size={16} /> : <Pin size={16} />}
         </button>
 
-        {hasVideo && !isLocal && (
+        {/* FIX 2: Show PiP button for both local AND remote tiles with video */}
+        {hasVideo && (
           <button
             onClick={handlePiP}
             className="p-2 rounded-xl bg-black/40 text-white/70 hover:bg-black/60 hover:text-white transition-all duration-300 shadow-md backdrop-blur-sm"

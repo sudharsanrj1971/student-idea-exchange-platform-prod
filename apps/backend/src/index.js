@@ -64,6 +64,13 @@ if (isProd) {
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
+  // FIX 4: Force UTF-8 Content-Type on all JSON responses so emoji / Unicode
+  // characters survive the full HTTP transit without corruption.
+  app.use((_req, res, next) => {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    next();
+  });
+
   // Sanitize user input against NoSQL Injection (MUST be after body parsers)
   app.use((req, _res, next) => {
     req.body = mongoSanitize(req.body);
