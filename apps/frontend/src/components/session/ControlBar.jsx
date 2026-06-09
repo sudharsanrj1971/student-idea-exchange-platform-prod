@@ -104,7 +104,7 @@ export default function ControlBar({
               title="Reactions"
               label="React"
             >
-              <div className="text-xl">😊</div>
+              <div className="text-xl" style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}>😊</div>
             </ControlButton>
             
             {showReactions && (
@@ -117,6 +117,7 @@ export default function ControlBar({
                       setShowReactions(false);
                     }}
                     className="w-12 h-12 flex items-center justify-center text-2xl hover:bg-white/10 rounded-xl transition-all hover:scale-125 active:scale-95"
+                    style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}
                   >
                     {emoji}
                   </button>

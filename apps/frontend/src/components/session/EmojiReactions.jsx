@@ -20,7 +20,7 @@ function FloatingEmoji({ emoji, senderName, startX, sway }) {
         '--sway': `${sway}px`,
       }}
     >
-      <div className="text-4xl drop-shadow-lg select-none">{emoji}</div>
+      <div className="text-4xl drop-shadow-lg select-none" style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}>{emoji}</div>
       {senderName && (
         <div className="mt-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-[10px] font-bold text-white whitespace-nowrap">
           {senderName}
