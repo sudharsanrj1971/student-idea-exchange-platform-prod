@@ -384,7 +384,9 @@ const VideoTile = memo(({
     .join('')
     .toUpperCase() || '?';
 
-  const hasVideo = !!(stream && stream.getVideoTracks().filter(t => t.readyState === 'live').length > 0);
+  // Bug fix: a disabled track (cam toggled off) still reports readyState='live'.
+  // We must also check track.enabled and explicit isCamOff to correctly show the avatar placeholder.
+  const hasVideo = !!(stream && !isCamOff && stream.getVideoTracks().filter(t => t.readyState === 'live' && t.enabled).length > 0);
 
   useEffect(() => {
     if (videoRef.current && hasVideo) {
@@ -413,11 +415,11 @@ const VideoTile = memo(({
             playsInline
             muted={isLocal || isScreen ? true : undefined}
             data-local={isLocal ? 'true' : undefined}
-            style={{ display: hasVideo ? 'block' : 'none' }}
-            className={`w-full h-full ${isScreen || isDominant ? 'object-contain bg-black' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
+            style={{ display: hasVideo ? 'block' : 'none', background: 'transparent' }}
+            className={`w-full h-full ${isScreen || isDominant ? 'object-contain' : 'object-cover'} ${isLocal && !isScreen ? 'mirror' : ''}`}
           />
           {!hasVideo && (
-            <div className="absolute inset-0 bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 overflow-hidden">
+            <div className="absolute inset-0 z-10 bg-gradient-to-br from-surface-800 to-surface-900 flex flex-col items-center justify-center gap-6 overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/10 via-transparent to-transparent animate-pulse duration-[4s]" />
               <div className={`rounded-full bg-gradient-to-b from-surface-700 to-surface-800 border-2 border-white/10 flex items-center justify-center font-black text-white relative z-10 shadow-[0_20px_40px_rgba(0,0,0,0.4)] ring-1 ring-white/20 overflow-hidden transition-all duration-500 hover:scale-105 ${isDominant ? 'w-48 h-48' : 'w-24 h-24'}`}>
                 <Avatar src={user?.avatar} name={user?.name} size={isDominant ? 'xl' : 'lg'} className="w-full h-full" />

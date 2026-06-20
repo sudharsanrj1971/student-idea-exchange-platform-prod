@@ -63,6 +63,78 @@ export default function ControlBar({
     <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95vw] lg:w-fit transition-all duration-500 ease-in-out ${
       isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
     }`}>
+      {/* Menus moved outside overflow-x-auto to fix z-index and click issues */}
+      {showReactions && (
+        <div className="absolute bottom-[calc(100%+16px)] left-1/2 -translate-x-1/2 bg-surface-800/95 backdrop-blur-xl border border-white/15 rounded-2xl p-3 flex gap-2 shadow-2xl flex-wrap justify-center w-[280px] sm:w-auto sm:flex-nowrap z-[70]">
+          {['❤️', '👍', '🎉', '😂', '😮', '😢', '🔥', '👏'].map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => {
+                onSendReaction(emoji);
+                setShowReactions(false);
+              }}
+              className="w-12 h-12 flex items-center justify-center text-2xl hover:bg-white/10 rounded-xl transition-all hover:scale-125 active:scale-95"
+              style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+      {showReactions && (
+        <div className="fixed inset-0 z-[60] bg-transparent" onClick={() => setShowReactions(false)} />
+      )}
+
+      {showLayoutMenu && (
+        <div className="absolute bottom-[calc(100%+16px)] left-1/2 -translate-x-1/2 bg-surface-800/90 backdrop-blur-3xl saturate-200 border border-white/20 rounded-2xl p-3 w-[240px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-in zoom-in-95 duration-300 z-[70]">
+          <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest px-2 mb-3">Layout Mode</div>
+          <div className="space-y-1 mb-4">
+            {[
+              { id: 'auto', label: 'Auto', desc: 'Smarter switching' },
+              { id: 'tiled', label: 'Tiled', desc: 'Everyone in a grid' },
+              { id: 'spotlight', label: 'Spotlight', desc: 'Focus on one person' },
+              { id: 'sidebar', label: 'Sidebar', desc: 'Speaker and small tiles' }
+            ].map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => {
+                  onLayoutChange(mode.id);
+                  setShowLayoutMenu(false);
+                }}
+                className={`w-full flex flex-col items-start px-3 py-2.5 rounded-xl transition-all border ${
+                  layoutMode === mode.id 
+                    ? 'bg-primary-500/20 text-primary-300 border-primary-500/40 shadow-inner' 
+                    : 'hover:bg-white/5 text-white/90 border-transparent hover:border-white/5'
+                }`}
+              >
+                <span className={`text-sm font-black tracking-tight ${layoutMode === mode.id ? 'text-primary-300' : 'text-white'}`}>{mode.label}</span>
+                <span className={`text-[10px] uppercase font-black tracking-widest opacity-60 mt-0.5 ${layoutMode === mode.id ? 'text-primary-400' : ''}`}>{mode.desc}</span>
+              </button>
+            ))}
+          </div>
+          <div className="pt-3 border-t border-white/5">
+            <button
+              onClick={() => {
+                onToggleHideNonVideo();
+                setShowLayoutMenu(false);
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
+                hideNonVideo 
+                  ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
+                  : 'hover:bg-white/5 text-white/70 border border-transparent'
+              }`}
+            >
+              <span className="text-xs font-bold whitespace-nowrap">Focus Mode</span>
+              <div className={`w-2 h-2 rounded-full ${hideNonVideo ? 'bg-indigo-400 animate-pulse' : 'bg-white/10'}`} />
+            </button>
+            <p className="text-[9px] text-white/50 px-3 mt-1 underline decoration-white/20 underline-offset-2 italic">Hide non-video</p>
+          </div>
+        </div>
+      )}
+      {showLayoutMenu && (
+        <div className="fixed inset-0 z-[60] bg-transparent" onClick={() => setShowLayoutMenu(false)} />
+      )}
+
       <div className="flex items-center gap-2 sm:gap-3 p-3 px-4 sm:px-8 bg-surface-800/70 backdrop-blur-3xl saturate-150 border border-white/20 rounded-[28px] ring-1 ring-black/40 shadow-2xl transition-all duration-500 overflow-x-auto custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
         
         {/* Group 1: Media Controls */}
@@ -106,27 +178,6 @@ export default function ControlBar({
             >
               <div className="text-xl" style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}>😊</div>
             </ControlButton>
-            
-            {showReactions && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-surface-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 flex gap-2 animate-in zoom-in-95 duration-200 shadow-2xl flex-wrap justify-center w-[280px] sm:w-auto sm:flex-nowrap z-50">
-                {['❤️', '👍', '🎉', '😂', '😮', '😢', '🔥', '👏'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      onSendReaction(emoji);
-                      setShowReactions(false);
-                    }}
-                    className="w-12 h-12 flex items-center justify-center text-2xl hover:bg-white/10 rounded-xl transition-all hover:scale-125 active:scale-95"
-                    style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )}
-            {showReactions && (
-              <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowReactions(false)} />
-            )}
           </div>
 
           {/* Screen Share */}
@@ -209,58 +260,6 @@ export default function ControlBar({
                layoutMode === 'tiled' ? <Grid size={22} /> : 
                <LayoutGrid size={22} />}
             </ControlButton>
-
-            {showLayoutMenu && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-surface-800/90 backdrop-blur-3xl saturate-200 border border-white/20 rounded-2xl p-3 w-[240px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-in zoom-in-95 duration-300 z-50">
-                <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest px-2 mb-3">Layout Mode</div>
-                
-                <div className="space-y-1 mb-4">
-                  {[
-                    { id: 'auto', label: 'Auto', desc: 'Smarter switching' },
-                    { id: 'tiled', label: 'Tiled', desc: 'Everyone in a grid' },
-                    { id: 'spotlight', label: 'Spotlight', desc: 'Focus on one person' },
-                    { id: 'sidebar', label: 'Sidebar', desc: 'Speaker and small tiles' }
-                  ].map((mode) => (
-                    <button
-                      key={mode.id}
-                      onClick={() => {
-                        onLayoutChange(mode.id);
-                        setShowLayoutMenu(false);
-                      }}
-                      className={`w-full flex flex-col items-start px-3 py-2.5 rounded-xl transition-all border ${
-                        layoutMode === mode.id 
-                          ? 'bg-primary-500/20 text-primary-300 border-primary-500/40 shadow-inner' 
-                          : 'hover:bg-white/5 text-white/90 border-transparent hover:border-white/5'
-                      }`}
-                    >
-                      <span className={`text-sm font-black tracking-tight ${layoutMode === mode.id ? 'text-primary-300' : 'text-white'}`}>{mode.label}</span>
-                      <span className={`text-[10px] uppercase font-black tracking-widest opacity-60 mt-0.5 ${layoutMode === mode.id ? 'text-primary-400' : ''}`}>{mode.desc}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="pt-3 border-t border-white/5">
-                  <button
-                    onClick={() => {
-                      onToggleHideNonVideo();
-                      setShowLayoutMenu(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
-                      hideNonVideo 
-                        ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-                        : 'hover:bg-white/5 text-white/70 border border-transparent'
-                    }`}
-                  >
-                    <span className="text-xs font-bold whitespace-nowrap">Focus Mode</span>
-                    <div className={`w-2 h-2 rounded-full ${hideNonVideo ? 'bg-indigo-400 animate-pulse' : 'bg-white/10'}`} />
-                  </button>
-                  <p className="text-[9px] text-white/50 px-3 mt-1 underline decoration-white/20 underline-offset-2 italic">Hide non-video participants</p>
-                </div>
-              </div>
-            )}
-            {showLayoutMenu && (
-              <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowLayoutMenu(false)} />
-            )}
           </div>
 
           {/* Record */}

@@ -214,13 +214,7 @@
     box-shadow: 0 0 20px rgba(67, 97, 238, 0.2), 0 0 40px rgba(67, 97, 238, 0.1);
   }
 
-  @keyframes floatUp {
-    0%   { transform: translateY(0) translateX(0)  scale(0.5); opacity: 0; }
-    10%  { transform: translateY(-60px) translateX(0) scale(1.2); opacity: 1; }
-    50%  { transform: translateY(-40vh) translateX(var(--sway)) scale(1); opacity: 1; }
-    90%  { transform: translateY(-80vh) translateX(calc(var(--sway) * -0.5)) scale(0.8); opacity: 0.6; }
-    100% { transform: translateY(-100vh) translateX(0) scale(0.6); opacity: 0; }
-  }
+  /* floatUp defined globally below, outside @layer, to prevent Tailwind purge */
 
   /* FIX 4: Emoji-safe font stack for chat messages so all Unicode emoji
      renders correctly across Chrome, Safari, Windows, and macOS */
@@ -228,12 +222,32 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
-/* FIX 4: Chat emoji font stack — outside @layer to avoid Tailwind purging */
+/* ================================================================
+   GLOBAL EMOJI FONT STACK — outside @layer to prevent Tailwind purge
+   ================================================================ */
+
+/* Apply emoji-safe fonts globally so all emoji characters render */
+*, button, input, textarea {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
+    "Android Emoji", sans-serif;
+}
+
+/* Reinforce on chat and reaction targets */
 #chat-panel .flex.gap-3,
 #chat-panel input,
 .chat-message {
-  font-family: system-ui, -apple-system, "Segoe UI Emoji", "Apple Color Emoji",
-    "Noto Color Emoji", "Android Emoji", sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", "Segoe UI Emoji",
+    "Apple Color Emoji", "Noto Color Emoji", "Android Emoji", sans-serif;
+}
+
+/* Floating emoji animation (EmojiRain) */
+@keyframes floatUp {
+  0%   { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+  10%  { transform: translateY(-60px) translateX(0) scale(1.2); opacity: 1; }
+  50%  { transform: translateY(-40vh) translateX(var(--sway, 0px)) scale(1); opacity: 1; }
+  90%  { transform: translateY(-80vh) translateX(calc(var(--sway, 0px) * -0.5)) scale(0.8); opacity: 0.6; }
+  100% { transform: translateY(-100vh) translateX(0) scale(0.6); opacity: 0; }
 }
 
 /* FIX 4: slideDown animation for the full-width announcement banner */
