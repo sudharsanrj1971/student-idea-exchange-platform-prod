@@ -3,6 +3,7 @@ import express from 'express';
 import { apiRateLimiter } from '../../src/middleware/rateLimiter.js';
 import authRoutes from '../../src/routes/auth.routes.js';
 import cookieParser from 'cookie-parser';
+import { bootstrapPromise } from '../../src/index.js';
 
 import { jest } from '@jest/globals';
 import jwt from 'jsonwebtoken';
@@ -14,6 +15,11 @@ app.use(apiRateLimiter);
 app.use('/api/auth', authRoutes);
 
 describe('Auth API - Black Box', () => {
+
+  beforeAll(async () => {
+    // Ensure the DB and all services are ready (bootstrapped by index.js)
+    await bootstrapPromise;
+  });
 
   describe('POST /api/auth/register', () => {
     it('should register a new valid user securely and return HTTP Only cookies', async () => {

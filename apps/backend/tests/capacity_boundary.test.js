@@ -14,7 +14,7 @@ import mongoose from 'mongoose';
  * ============================================================
  */
 
-import { app, httpServer } from '../src/index.js';
+import { app, httpServer, bootstrapPromise } from '../src/index.js';
 
 // ── HELPERS ──────────────────────────────────────────────────
 
@@ -72,6 +72,9 @@ function connectAndJoin(token, sessionId, serverUrl) {
 // ── SETUP / TEARDOWN ─────────────────────────────────────────
 
 beforeAll(async () => {
+  // Wait for application bootstrap (routes, DB, middleware) to be ready
+  await bootstrapPromise;
+
   globalToken = await getToken();
   const session = await createTestSession(globalToken, 1500);
   globalSessionId = session?._id;
@@ -80,6 +83,7 @@ beforeAll(async () => {
 afterAll(async () => {
   process.env.LOAD_TEST_MODE = 'false';
 });
+
 
 // ═══════════════════════════════════════════════════════════════
 // SUITE 1: REST API — Session Capacity Validation

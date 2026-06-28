@@ -10,7 +10,7 @@
     "prestart": "npx kill-port 5000",
     "start": "node src/index.js",
     "start:scale": "cross-env UV_THREADPOOL_SIZE=128 node --max-old-space-size=8192 src/index.js",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --runInBand"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1035.0",

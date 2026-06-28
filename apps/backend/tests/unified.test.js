@@ -1,6 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import { app } from '../src/index.js';
+import { app, bootstrapPromise } from '../src/index.js';
 import { User } from '../src/models/User.model.js';
 import { sanitize } from '../src/utils/sanitizer.js';
 import { getOffset } from '../src/utils/pagination.js';
@@ -32,16 +32,8 @@ async function registerAndLogin(user) {
 }
 
 beforeAll(async () => {
-  // Wait for DB connection to be fully operational
-  let retries = 20;
-  while (mongoose.connection.readyState !== 1 && retries > 0) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    retries--;
-  }
-  
-  if (mongoose.connection.readyState !== 1) {
-    throw new Error('Database connection failed to initialize in time for tests.');
-  }
+  // Wait for application bootstrap to complete
+  await bootstrapPromise;
 
   userAToken = await registerAndLogin(USER_A);
   if (!userAToken) {

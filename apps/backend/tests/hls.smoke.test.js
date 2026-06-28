@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app } from '../src/index.js';
+import { app, bootstrapPromise } from '../src/index.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -7,9 +7,15 @@ describe('HLS Smoke Test', () => {
   const HLS_ROOT = process.env.HLS_ROOT || '/var/www/hls';
 
   beforeAll(async () => {
+    // Ensure bootstrap is complete (routes must be mounted)
+    await bootstrapPromise;
     // Ensure the HLS directory exists for the test
-    await fs.mkdir(path.join(HLS_ROOT, 'test-session'), { recursive: true });
-    await fs.writeFile(path.join(HLS_ROOT, 'test-session', 'index.m3u8'), '#EXTM3U\n#EXT-X-VERSION:3');
+    try {
+      await fs.mkdir(path.join(HLS_ROOT, 'test-session'), { recursive: true });
+      await fs.writeFile(path.join(HLS_ROOT, 'test-session', 'index.m3u8'), '#EXTM3U\n#EXT-X-VERSION:3');
+    } catch (_) {
+      // Directory may not be writable in test env — test will naturally fail with 404
+    }
   });
 
   afterAll(async () => {

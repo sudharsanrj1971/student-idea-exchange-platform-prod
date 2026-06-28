@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app } from '../src/index.js';
+import { app, bootstrapPromise } from '../src/index.js';
 import { sanitize } from '../src/utils/sanitizer.js';
 import { getOffset } from '../src/utils/pagination.js';
 import jwt from 'jsonwebtoken';
@@ -45,6 +45,9 @@ beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
   process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret';
+
+  // Wait for application bootstrap to complete
+  await bootstrapPromise;
 
   // Reset tokens and sessions for each test suite to avoid interference
   userAToken = await registerAndLogin(USER_A);

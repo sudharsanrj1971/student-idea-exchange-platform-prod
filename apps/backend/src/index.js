@@ -64,12 +64,6 @@ if (isProd) {
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
-  // FIX 4: Force UTF-8 Content-Type on all JSON responses so emoji / Unicode
-  // characters survive the full HTTP transit without corruption.
-  app.use((_req, res, next) => {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    next();
-  });
 
   // Sanitize user input against NoSQL Injection (MUST be after body parsers)
   app.use((req, _res, next) => {
@@ -196,124 +190,123 @@ if (isProd) {
         }
       }
 
-      // Redis
-      try {
-        logger.info('📦 Connecting to Redis...');
-        await connectRedis();
-
-        // ─── Session Setup (After Redis is connected) ────────
-        const sessionMiddleware = session({
-          store: new RedisStore({ 
-            client: redisClient,
-            prefix: 'ichange:sess:'
-          }),
-          secret: process.env.SESSION_SECRET || 'ichange-secret-key-change-in-prod',
+      // ─── Session Middleware ────────────────────────────────
+      // In test mode, use a simple in-memory session (no Redis needed)
+      let sessionMiddleware;
+      if (isTest) {
+        sessionMiddleware = session({
+          secret: 'ichange-test-secret',
           resave: false,
           saveUninitialized: false,
-          name: 'ichange.sid',
-          cookie: {
-            secure: true,
-            sameSite: 'none',
-            httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000
+          cookie: { secure: false }
+        });
+      } else {
+        try {
+          logger.info('📦 Connecting to Redis...');
+          await connectRedis();
+          if (redisClient) {
+            sessionMiddleware = session({
+              store: new RedisStore({ 
+                client: redisClient,
+                prefix: 'ichange:sess:'
+              }),
+              secret: process.env.SESSION_SECRET || 'ichange-secret-key-change-in-prod',
+              resave: false,
+              saveUninitialized: false,
+              name: 'ichange.sid',
+              cookie: {
+                secure: isProd,
+                sameSite: isProd ? 'none' : 'lax',
+                httpOnly: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000
+              }
+            });
+          } else {
+            throw new Error('Redis client unavailable');
           }
-        });
-        app.use(sessionMiddleware);
-
-        // ─── Passport Initialization ─────────────────────────
-        const passportInit = passport.initialize();
-        const passportSession = passport.session();
-        app.use(passportInit);
-        app.use(passportSession);
-
-        // ─── Routes (MUST be after session/passport) ────────
-        app.use('/api/auth', authRoutes);
-        app.use('/api/sessions', sessionRoutes);
-        app.use('/api/attendance', attendanceRoutes);
-        app.use('/api/admin', adminRoutes);
-        app.use('/api/user', userRoutes);
-
-        // ─── 404 handler (MUST be after routes) ─────────────
-        app.use((_req, res) => {
-          res.status(404).json({ error: 'Route not found' });
-        });
-
-        // ─── Global error handler ────────────────────────────
-        app.use(globalErrorHandler);
-
-        logger.info('📦 Initializing Mediasoup workers...');
-        await createWorkerPool();
-        
-        logger.info('📦 Setting up Socket.IO...');
-        setupSocket(server, sessionMiddleware, passportInit, passportSession);
-
-      } catch (err) {
-        if (isProd) {
-          logger.error(`❌ FATAL: Redis connection failed in Production!`, { error: err.message });
-          process.exit(1);
-        } else {
-          logger.warn(`⚠️  Redis not available. Sessions will fall back to memory or fail.`, { error: err.message });
-          // Fallback to memory session if Redis fails in dev
-          const sessionMiddleware = session({
+        } catch (redisErr) {
+          if (isProd) {
+            logger.error(`❌ FATAL: Redis connection failed in Production!`, { error: redisErr.message });
+            process.exit(1);
+          }
+          logger.warn(`⚠️  Redis not available. Falling back to in-memory sessions.`, { error: redisErr.message });
+          sessionMiddleware = session({
             secret: 'ichange-dev-secret',
             resave: false,
             saveUninitialized: false,
             cookie: { secure: false }
           });
-          app.use(sessionMiddleware);
-          const passportInit = passport.initialize();
-          const passportSession = passport.session();
-          app.use(passportInit);
-          app.use(passportSession);
-          
-          // Routes and setup for dev-fallback
-          app.use('/api/auth', authRoutes);
-          app.use('/api/sessions', sessionRoutes);
-          app.use('/api/attendance', attendanceRoutes);
-          app.use('/api/admin', adminRoutes);
-          app.use('/api/user', userRoutes);
-
-          // ─── 404 handler (MUST be after routes) ─────────────
-          app.use((_req, res) => {
-            res.status(404).json({ error: 'Route not found' });
-          });
-
-          // ─── Global error handler ────────────────────────────
-          app.use(globalErrorHandler);
-          await createWorkerPool();
-          setupSocket(server, sessionMiddleware, passportInit, passportSession);
         }
+      }
+
+      // ─── Passport ─────────────────────────────────────────
+      app.use(sessionMiddleware);
+      const passportInit = passport.initialize();
+      const passportSession = passport.session();
+      app.use(passportInit);
+      app.use(passportSession);
+
+      // ─── Routes (MUST be after session/passport) ──────────
+      app.use('/api/auth', authRoutes);
+      app.use('/api/sessions', sessionRoutes);
+      app.use('/api/attendance', attendanceRoutes);
+      app.use('/api/admin', adminRoutes);
+      app.use('/api/user', userRoutes);
+
+      // ─── 404 handler ──────────────────────────────────────
+      app.use((_req, res) => {
+        res.status(404).json({ error: 'Route not found' });
+      });
+
+      // ─── Global error handler ──────────────────────────────
+      app.use(globalErrorHandler);
+
+      // ─── Mediasoup + Socket.IO (skip in test mode) ────────
+      if (!isTest) {
+        logger.info('📦 Initializing Mediasoup workers...');
+        await createWorkerPool();
+        logger.info('📦 Setting up Socket.IO...');
+        setupSocket(server, sessionMiddleware, passportInit, passportSession);
       }
 
       server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {
           logger.error(`❌ FATAL: Port ${PORT} already in use. Try running: npx kill-port ${PORT}`);
-          process.exit(1);
+          if (!isTest) process.exit(1);
         } else {
           logger.error('❌ Server error:', { message: err.message });
         }
       });
 
-    if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
+      if (!isTest || process.env.FORCE_LISTEN === 'true') {
         logger.info(`📦 Attempting to listen on port ${PORT}...`);
         server.listen(PORT, '0.0.0.0', () => {
           logger.info(`🚀 SERVER ONLINE: http://localhost:${PORT} [PID: ${process.pid}]`);
         });
       }
+
     } catch (err) {
       logger.error(`❌ Bootstrap failed`, { 
         error: err.message, 
         stack: err.stack 
       });
+      // In test mode, throw instead of process.exit so Jest can handle it
+      if (isTest) throw err;
       process.exit(1);
     }
   }
 
-  if (import.meta.url === `file://${path.resolve(process.argv[1])}`.replace(/\\/g, '/') || (process.env.NODE_ENV === 'development' && process.env.AUTO_BOOTSTRAP !== 'false')) {
-    bootstrap();
+  const shouldBootstrap =
+    import.meta.url === `file://${path.resolve(process.argv[1])}`.replace(/\\/g, '/') ||
+    (process.env.NODE_ENV === 'development' && process.env.AUTO_BOOTSTRAP !== 'false') ||
+    process.env.NODE_ENV === 'test';
+
+  let bootstrapPromise = null;
+  if (shouldBootstrap) {
+    bootstrapPromise = bootstrap();
   }
 
-  export { app, server as httpServer };
+  export { app, server as httpServer, bootstrapPromise };
 
   // ─── Graceful shutdown ────────────────────────────────
   const shutdown = async (signal) => {
