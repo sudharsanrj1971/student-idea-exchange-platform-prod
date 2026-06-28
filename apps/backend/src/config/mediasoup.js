@@ -1,10 +1,16 @@
 // Mediasoup configuration
 const isProd = process.env.NODE_ENV === 'production';
 const announcedIp = process.env.MEDIASOUP_ANNOUNCED_IP;
+const skipMediasoupCheck =
+  process.env.RENDER === 'true' ||
+  process.env.SKIP_MEDIASOUP_IP_CHECK === 'true';
 
-if (isProd && !announcedIp) {
+if (isProd && !announcedIp && !skipMediasoupCheck) {
   console.error('❌ FATAL: MEDIASOUP_ANNOUNCED_IP is not set in production! WebRTC will not work for remote users. Exiting.');
   process.exit(1);
+}
+if (isProd && !announcedIp && skipMediasoupCheck) {
+  console.warn('⚠️  MEDIASOUP_ANNOUNCED_IP not set — WebRTC media disabled (Render demo mode). Signaling/API still functional.');
 }
 
 export const mediasoupConfig = {

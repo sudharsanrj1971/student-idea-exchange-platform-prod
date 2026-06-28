@@ -35,9 +35,19 @@ export function validateEnv() {
   }
 
   // Mediasoup specific production check
-  if (isProd && !process.env.MEDIASOUP_ANNOUNCED_IP) {
+  // Skip on Render (RENDER=true / SKIP_MEDIASOUP_IP_CHECK=true) since
+  // Render cannot expose UDP ports required for WebRTC media transport.
+  const skipMediasoupCheck =
+    process.env.RENDER === 'true' ||
+    process.env.SKIP_MEDIASOUP_IP_CHECK === 'true';
+
+  if (isProd && !process.env.MEDIASOUP_ANNOUNCED_IP && !skipMediasoupCheck) {
     logger.error('CRITICAL: MEDIASOUP_ANNOUNCED_IP is required in production.');
     process.exit(1);
+  }
+
+  if (isProd && !process.env.MEDIASOUP_ANNOUNCED_IP && skipMediasoupCheck) {
+    logger.warn('⚠️  MEDIASOUP_ANNOUNCED_IP not set — WebRTC media disabled (Render mode). Signaling/API still functional.');
   }
 
   // Warning for production secrets using dev defaults

@@ -101,6 +101,7 @@ export async function registerUser({ name, email, password, role, studentId }) {
 
   const userJson = user.toJSON();
   userJson.profilePic = profile.profilePic;
+  userJson.avatar = profile.profilePic; // BUG FIX: frontend expects avatar
   userJson.profileSource = profile.profileSource;
 
   // Background task: Send welcome email
@@ -163,6 +164,7 @@ export async function loginUser({ email, password }) {
 
   const userJson = user.toJSON();
   userJson.profilePic = profile.profilePic;
+  userJson.avatar = profile.profilePic; // BUG FIX: frontend expects avatar
   userJson.profileSource = profile.profileSource;
 
   // Update user model if profilePic changed
@@ -242,6 +244,7 @@ export async function googleLogin({ idToken, role }) {
 
   const userJson = user.toJSON();
   userJson.profilePic = profile.profilePic;
+  userJson.avatar = profile.profilePic; // BUG FIX: frontend expects avatar
   userJson.profileSource = profile.profileSource;
 
   return { user: userJson, accessToken, refreshToken };
