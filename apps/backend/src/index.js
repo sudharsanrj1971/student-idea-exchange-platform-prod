@@ -85,7 +85,8 @@ if (isProd) {
           process.env.FRONTEND_URL,
           'https://ichangehub.me',
           'https://www.ichangehub.me',
-          'https://student-idea-exchange-platform-prod.pages.dev'
+          'https://student-idea-exchange-platform-prod.pages.dev',
+          'https://ichange-frontend.onrender.com'
         ]
       : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
     credentials: true,

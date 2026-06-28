@@ -1,3 +1,3 @@
-/api/* https://api.ichangehub.me/api/:splat 301
-/socket.io/* https://api.ichangehub.me/socket.io/:splat 301
+/api/* https://student-idea-exchange-platform-prod.onrender.com/api/:splat 301
+/socket.io/* https://student-idea-exchange-platform-prod.onrender.com/socket.io/:splat 101
 /* /index.html 200
