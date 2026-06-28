@@ -1,0 +1,87 @@
+## render.yaml — iChange Render Blueprint
+## Docs: https://render.com/docs/blueprint-spec
+##
+## Deploy both services by connecting this repo in the Render dashboard
+## and selecting "Use render.yaml".
+
+services:
+  # ─── Backend (Node.js Web Service) ─────────────────────────────────────────
+  - type: web
+    name: ichange-backend
+    runtime: node
+    region: singapore          # Change: oregon | frankfurt | ohio | virginia
+    plan: free                 # Change to "starter" ($7/mo) for no sleep
+
+    rootDir: apps/backend
+    buildCommand: npm install --legacy-peer-deps
+    startCommand: node src/index.js
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000            # Render always exposes on 10000 internally
+
+      # ── Filled by you in the Render Dashboard → Environment tab ──
+      - key: MONGODB_URI
+        sync: false             # secret — set manually in dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: REDIS_URL
+        sync: false             # Use Render Redis add-on or Upstash
+      - key: FRONTEND_URL
+        sync: false             # e.g. https://ichange-frontend.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        value: 323801519369-53avmrpuqvmmq73q3emq5phd5886un80.apps.googleusercontent.com
+      - key: GOOGLE_CALLBACK_URL
+        sync: false             # e.g. https://ichange-backend.onrender.com/api/auth/google/callback
+
+      # ── Render-specific flags ──
+      - key: RENDER
+        value: "true"
+      - key: SKIP_MEDIASOUP_IP_CHECK
+        value: "true"           # Render cannot expose UDP — Mediasoup signaling only
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: MEDIASOUP_LISTEN_IP
+        value: "0.0.0.0"
+      - key: MEDIASOUP_MIN_PORT
+        value: "10000"
+      - key: MEDIASOUP_MAX_PORT
+        value: "59999"
+      - key: ADMIN_EMAIL
+        value: sudharsanrj1971@gmail.com
+      - key: ADMIN_PASSWORD
+        sync: false             # set a strong password manually
+
+  # ─── Frontend (Static Site) ─────────────────────────────────────────────────
+  - type: web
+    name: ichange-frontend
+    runtime: static
+    region: singapore
+
+    rootDir: apps/frontend
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    staticPublishPath: ./dist
+
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html   # SPA fallback for React Router
+
+    envVars:
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 323801519369-53avmrpuqvmmq73q3emq5phd5886un80.apps.googleusercontent.com
+      - key: VITE_API_URL
+        sync: false             # e.g. https://ichange-backend.onrender.com
