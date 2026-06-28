@@ -111,6 +111,16 @@ if (isProd) {
     });
   });
 
+  // ─── Root URL Welcome ─────────────────────────────────
+  app.get('/', (_req, res) => {
+    res.json({
+      message: '🚀 iChange API Platform Backend is online!',
+      status: 'healthy',
+      version: '1.0.0',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // NOTE: 404 and global error handlers are registered inside bootstrap()
   // AFTER routes, to ensure correct Express middleware ordering.
 
