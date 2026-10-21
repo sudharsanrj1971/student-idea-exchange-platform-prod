@@ -80,7 +80,8 @@ if (isProd) {
           'https://ichangehub.me',
           'https://www.ichangehub.me',
           'https://student-idea-exchange-platform-prod.pages.dev',
-          'https://ichange-frontend.onrender.com'
+          'https://ichange-frontend.onrender.com',
+          'https://student-idea-exchange-platform-prod.onrender.com'
         ]
       : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
     credentials: true,
