@@ -1,21 +1,8 @@
+// FIX: Moved all imports to the top (ESM best practice). Previously, imports appeared
+// mid-file after function declarations, which relied on implicit ESM hoisting and was
+// confusing. Removed duplicate getAllRouters() and dead getRouterForSession alias that
+// referenced getRouter before it was declared.
 import { getWorkerByIndex, getLeastLoadedWorkerIndex, incrementWorkerLoad, decrementWorkerLoad } from './worker.js';
-
-export async function getAllRouters() {
-  const routers = [];
-  for (const [sessionId, routerPromise] of routerPromises.entries()) {
-    try {
-      const router = await routerPromise;
-      if (router) routers.push(router);
-    } catch (e) {
-      logger.error('Failed to get router for session', { sessionId, error: e.message });
-    }
-  }
-  return routers;
-}
-
-// Alias for compatibility
-export const getRouterForSession = getRouter;
-
 import { mediasoupConfig } from '../config/mediasoup.js';
 import { Session } from '../models/Session.model.js';
 import { logger } from '../config/logger.js';
@@ -38,11 +25,6 @@ export async function getRouter(sessionId) {
   }
 
   // Cache a promise IMMEDIATELY to prevent race: two callers both see empty cache and create two routers
-  let resolveRouter, rejectRouter;
-  const eagerPromise = new Promise((res, rej) => { resolveRouter = res; rejectRouter = rej; });
-  routerPromises.set(sessionId, eagerPromise);
-
-  // Define creation logic as a promise
   routerPromise = (async () => {
     try {
       // 1. Check DB for assigned worker
@@ -120,6 +102,23 @@ export async function getRouter(sessionId) {
   return routerPromise;
 }
 
+/** Alias for compatibility */
+export const getRouterForSession = getRouter;
+
+/** Returns all currently active mediasoup routers */
+export async function getAllRouters() {
+  const routers = [];
+  for (const [sessionId, routerPromise] of routerPromises.entries()) {
+    try {
+      const router = await routerPromise;
+      if (router) routers.push(router);
+    } catch (e) {
+      logger.error('Failed to get router for session', { sessionId, error: e.message });
+    }
+  }
+  return routers;
+}
+
 export async function closeRouter(sessionId) {
   const routerPromise = routerPromises.get(sessionId);
   if (routerPromise) {
@@ -137,4 +136,3 @@ export async function closeRouter(sessionId) {
     logger.info(`Requested closure for session ${sessionId} router`);
   }
 }
-

@@ -287,6 +287,5 @@ router.get('/me', authenticate, (req, res) => {
   res.json({ user: req.user });
 });
 
-router.get("/status", authenticate, (req, res) => { res.json({ user: req.user }); });
-
+// NOTE: GET /status is defined above (line ~104) with full error handling.
 export default router;

@@ -122,7 +122,7 @@ router.get('/:id/attendance', async (req, res, next) => {
     
     // Auth check: host, admin, OR ANY ACTIVE PARTICIPANT
     const isParticipant = session.participants.some(p => p.userId.toString() === req.user._id.toString());
-    const isHost = session.host.toString() === req.user._id.toString();
+    const isHost = (session.host?._id || session.host).toString() === req.user._id.toString();
     const isAdmin = req.user.role === 'admin';
 
     if (!isParticipant && !isHost && !isAdmin) {

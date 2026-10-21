@@ -188,7 +188,10 @@ export function sessionHandler(io, socket) {
 
   // ── Auto leave on disconnect ───────────────────────────
   socket.on('disconnect', async () => {
-    const rooms = [...socket.rooms].filter((r) => r !== socket.id);
+    // FIX: Also filter out the user's personal room (their userId) so we don't
+    // call handleLeave with a userId string instead of a real sessionId.
+    const userPersonalRoom = socket.user._id.toString();
+    const rooms = [...socket.rooms].filter((r) => r !== socket.id && r !== userPersonalRoom);
     for (const sessionId of rooms) {
       await handleLeave(io, socket, sessionId);
     }

@@ -76,7 +76,7 @@ router.patch('/config/:key', async (req, res, next) => {
     
     if (!config) return res.status(404).json({ error: 'Config not found' });
     
-    await logAdminAction(req, 'ROLE_CHANGE', null, { key, value }); // Reuse ROLE_CHANGE for generic config log temporarily or keep it simple
+    await logAdminAction(req, 'UPDATE_CONFIG', null, { key, value });
     res.json(config);
   } catch (err) {
     next(err);

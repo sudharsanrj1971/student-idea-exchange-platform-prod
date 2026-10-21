@@ -12,6 +12,7 @@ const MAINTENANCE_WHITELIST = [
   '/api/auth/sync-profile', // needed for the login page email preview
   '/api/admin/maintenance',  // so admin can toggle maintenance OFF
   '/health',
+  '/api/health',
 ];
 
 export async function maintenanceMode(req, res, next) {

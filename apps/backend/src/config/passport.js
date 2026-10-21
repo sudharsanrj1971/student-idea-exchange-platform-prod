@@ -1,48 +1,54 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { User } from '../models/User.model.js';
+import { logger } from './logger.js';
 
 export function configurePassport() {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://api.ichangehub.me/api/auth/google/callback',
-        proxy: true,
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          let user = await User.findOne({ provider_id: profile.id, auth_provider: 'google' });
-          if (!user) {
-            const email = profile.emails?.[0]?.value;
-            if (email) {
-              user = await User.findOne({ email: email.toLowerCase() });
-              if (user) {
-                user.auth_provider = 'google';
-                user.provider_id = profile.id;
-                if (!user.profilePic) user.profilePic = profile.photos?.[0]?.value;
-                await user.save();
-                return done(null, user);
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://api.ichangehub.me/api/auth/google/callback',
+          proxy: true,
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            let user = await User.findOne({ provider_id: profile.id, auth_provider: 'google' });
+            if (!user) {
+              const email = profile.emails?.[0]?.value;
+              if (email) {
+                user = await User.findOne({ email: email.toLowerCase() });
+                if (user) {
+                  user.auth_provider = 'google';
+                  user.provider_id = profile.id;
+                  if (!user.profilePic) user.profilePic = profile.photos?.[0]?.value;
+                  await user.save();
+                  return done(null, user);
+                }
               }
+              user = await User.create({
+                name: profile.displayName,
+                email: email,
+                auth_provider: 'google',
+                provider_id: profile.id,
+                profilePic: profile.photos?.[0]?.value,
+                role: 'student',
+              });
             }
-            user = await User.create({
-              name: profile.displayName,
-              email: email,
-              auth_provider: 'google',
-              provider_id: profile.id,
-              profilePic: profile.photos?.[0]?.value,
-              role: 'student',
-            });
+            return done(null, user);
+          } catch (err) {
+            console.error('Passport Google Strategy error:', err);
+            return done(err, null);
           }
-          return done(null, user);
-        } catch (err) {
-          console.error('Passport Google Strategy error:', err);
-          return done(err, null);
         }
-      }
-    )
-  );
+      )
+    );
+  } else {
+    logger.warn('⚠️  Google OAuth credentials not configured; Google Strategy disabled in dev.');
+  }
+
   passport.serializeUser((user, done) => {
     done(null, user._id.toString());
   });

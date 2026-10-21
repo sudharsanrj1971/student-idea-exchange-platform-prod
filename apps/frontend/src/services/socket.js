@@ -51,18 +51,18 @@ class SocketService {
     });
 
     // ── Global Profile Sync ──
-    this.socket.on('user:profile_updated', ({ userId, avatar, source }) => {
+    this.socket.on('user:profile_updated', ({ userId, profilePic, source }) => {
       // 1. Update current authenticated user if matches
       const { user, updateUser } = useAuthStore.getState();
       if (user && user._id === userId) {
-        updateUser({ avatar, image_source: source });
+        updateUser({ profilePic, avatar: profilePic, image_source: source });
       }
 
       // 2. Update participant list in active sessions
       const { updateParticipantProfile, participants } = useSessionStore.getState();
       const isParticipant = participants.some(p => p.userId === userId);
       if (isParticipant) {
-        updateParticipantProfile(userId, avatar);
+        updateParticipantProfile(userId, profilePic);
       }
     });
 

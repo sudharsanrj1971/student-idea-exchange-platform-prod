@@ -98,7 +98,7 @@ if (isProd) {
   app.use('/hls', express.static(process.env.HLS_ROOT || '/var/www/hls'));
 
   // ─── Health check ─────────────────────────────────────
-  app.get('/health', (_req, res) => {
+  app.get(['/health', '/api/health'], (_req, res) => {
     res.json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
